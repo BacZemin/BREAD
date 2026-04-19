@@ -15,7 +15,9 @@ classifications(object, ...)
 \item{...}{Unused.}
 }
 \value{
-A character vector of classifications per region.
+A named character vector of classifications per region
+(names are region IDs, values are one of \code{"hypermethylated"},
+\code{"hypomethylated"}, \code{"inconclusive"}).
 }
 \description{
 Extract region classifications from a \link{BreadFit}

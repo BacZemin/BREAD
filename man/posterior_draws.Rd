@@ -3,22 +3,27 @@
 \name{posterior_draws}
 \alias{posterior_draws}
 \alias{posterior_draws,BreadFit-method}
-\title{Extract posterior draws for the region-level effect}
+\title{Draw from the posterior of a region's contrast coefficient}
 \usage{
 posterior_draws(object, region_id = NULL, ...)
 
-\S4method{posterior_draws}{BreadFit}(object, region_id = NULL, ...)
+\S4method{posterior_draws}{BreadFit}(object, region_id = NULL, n = 4000L, seed = NULL, ...)
 }
 \arguments{
 \item{object}{A \link{BreadFit}.}
 
-\item{region_id}{Optional region ID to subset.}
+\item{region_id}{Character vector of region IDs (all regions if \code{NULL}).}
 
 \item{...}{Unused.}
+
+\item{n}{Number of draws per region. Default \code{4000}.}
+
+\item{seed}{Optional integer seed. If \code{NULL}, the global RNG state is used.}
 }
 \value{
-A tidy data frame of draws.
+A long \code{data.frame} with columns \code{region_id}, \code{draw}, \code{value}.
 }
 \description{
-Extract posterior draws for the region-level effect
+Samples are drawn from the marginal scaled Student-t posterior of the
+contrast coefficient, \verb{beta ~ mu_n + scale * t_\{2 a_n\}}.
 }

@@ -3,7 +3,7 @@
 \name{results}
 \alias{results}
 \alias{results,BreadFit-method}
-\title{Extract the tidy results table from a \link{BreadFit}}
+\title{Extract the region-level results table from a \link{BreadFit}}
 \usage{
 results(object, ...)
 
@@ -15,8 +15,8 @@ results(object, ...)
 \item{...}{Unused.}
 }
 \value{
-A data frame (or \link{BreadResults}) with one row per region.
+A data frame with one row per region.
 }
 \description{
-Extract the tidy results table from a \link{BreadFit}
+Extract the region-level results table from a \link{BreadFit}
 }

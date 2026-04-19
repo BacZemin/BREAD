@@ -40,3 +40,18 @@
   names(gr) <- c("regA", "regB", "regC")
   gr
 }
+
+# Toy SE with injected signal: regA becomes hyper, regC becomes hypo,
+# in "old" vs "young" under ~ group. Sample size large enough for
+# prob_cutoff = 0.95 classification to recover truth.
+.make_toy_signal_se <- function(n_samples = 24L, seed = 11L,
+                                hyper_effect = 1.0, hypo_effect = -1.0) {
+  se <- .make_toy_se(n_probes = 20L, n_samples = n_samples, seed = seed)
+  old_mask <- SummarizedExperiment::colData(se)$group == "old"
+  X <- SummarizedExperiment::assay(se, "M")
+  # regA covers probes 1-6; regC covers probes 16-20 (see .make_toy_features())
+  X[1:6,   old_mask] <- X[1:6,   old_mask] + hyper_effect
+  X[16:20, old_mask] <- X[16:20, old_mask] + hypo_effect
+  SummarizedExperiment::assay(se, "M") <- X
+  se
+}
