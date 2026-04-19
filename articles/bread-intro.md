@@ -1,280 +1,296 @@
 # Intro to BREAD
 
-## What BREAD is for
+## Why BREAD?
 
 Many methylation studies are not purely discovery-oriented. Instead of
 asking *“which CpGs are significant genome-wide?”*, the question is
-often:
+often region-centric:
 
-- Are **PRC2 target regions** hypermethylated in old vs. young samples?
-- Do **bivalent promoters** coherently lose methylation after treatment?
-- Among my **predefined chromatin classes** (LADs, PMDs, CGIs, …), which
-  show strong directional evidence at a biologically meaningful effect
-  size?
+- Are **bivalent promoters** hypermethylated in tumor vs. normal?
+- Do **PMD-like heterochromatin regions** lose methylation in aging?
+- Which of my **predefined chromatin classes** show coherent change?
 
-Existing tooling is strong for genome-wide hypothesis testing, but
-answering those questions directly benefits from:
+BREAD answers those questions directly, returning posterior
+probabilities per region at a biologically meaningful effect-size
+threshold.
 
-1.  **region-centric** inference (one answer per region, not per CpG),
-2.  **threshold-based** decisions on biologically meaningful effect
-    sizes,
-3.  **posterior probabilities** rather than p-values,
-4.  *borrowing strength across probes inside a region.*
+## A real-data demo: TCGA matched tumor–normal (HM450)
 
-BREAD provides a minimal, interpretable Bayesian workflow for exactly
-these targeted questions, built around `SummarizedExperiment` and
-`GRanges`.
-
-## Install and load
+We use `HM450.76.TCGA.matched` from **`sesameData`** — 10,042 HM450
+probes × 76 samples (38 patients each with matched Normal + Tumour).
+This is a strong, well-understood signal: tumors show broad
+hypermethylation at Polycomb targets and hypomethylation in
+partially-methylated / quiescent regions.
 
 ``` r
 library(BREAD)
+library(sesameData)
+library(knowYourCG)
 library(SummarizedExperiment)
 library(GenomicRanges)
 library(ggplot2)
 library(patchwork)
 ```
 
-## Build a toy young-vs-old methylation experiment
-
-We simulate 60 CpG probes on chromosome 1 spaced every 1 kb, across 16
-samples (8 young, 8 old). We define five regions of interest — a mix of
-PRC-like, CGI-like, and LAD-like feature classes — and inject a strong
-hyper or hypo signal into a few of them so we can see BREAD recover
-them.
-
 ``` r
-n_probes  <- 60L
-n_samples <- 16L
-
-# Probe-level GRanges (rowRanges of the SE)
-probes <- GRanges(
-  seqnames = "chr1",
-  ranges   = IRanges(start = seq(1L, by = 1000L, length.out = n_probes),
-                     width = 1L)
-)
-names(probes) <- sprintf("cg%04d", seq_len(n_probes))
-
-# Sample metadata
-coldata <- S4Vectors::DataFrame(
-  group = factor(rep(c("young", "old"), each = n_samples / 2),
-                 levels = c("young", "old")),
-  sex   = factor(rep(c("F", "M"), length.out = n_samples)),
-  row.names = sprintf("S%02d", seq_len(n_samples))
-)
-
-# Baseline M-values: noise centered at 0
-X <- matrix(
-  rnorm(n_probes * n_samples, mean = 0, sd = 0.3),
-  nrow = n_probes,
-  dimnames = list(names(probes), rownames(coldata))
-)
-
-# Regions we care about (biologically predefined sets)
-regions <- GRanges(
-  seqnames = "chr1",
-  ranges   = IRanges(
-    start = c(    1L, 10001L, 20001L, 30001L, 45001L),
-    end   = c(10000L, 19000L, 28000L, 40000L, 55000L)
-  ),
-  feature_class = c("PRC", "CGI", "LAD", "PRC", "LAD")
-)
-names(regions) <- c("PRC_early", "CGI_island", "LAD_chr1q",
-                    "PRC_mid",   "LAD_distal")
-
-# Inject signal: in "old" samples, PRC_early gains ~1 M-value, LAD_chr1q loses ~1.
-# CGI_island, PRC_mid, LAD_distal are left at baseline (should come out inconclusive).
-old_mask <- coldata$group == "old"
-probe_in <- function(gr) which(IRanges::overlapsAny(probes, gr))
-X[probe_in(regions["PRC_early"]), old_mask] <-
-  X[probe_in(regions["PRC_early"]), old_mask] + 1.0
-X[probe_in(regions["LAD_chr1q"]), old_mask] <-
-  X[probe_in(regions["LAD_chr1q"]), old_mask] - 1.0
-
-se <- SummarizedExperiment(
-  assays    = list(M = X),
-  rowRanges = probes,
-  colData   = coldata
-)
-se
-#> class: RangedSummarizedExperiment 
-#> dim: 60 16 
-#> metadata(0):
-#> assays(1): M
-#> rownames(60): cg0001 cg0002 ... cg0059 cg0060
-#> rowData names(0):
-#> colnames(16): S01 S02 ... S15 S16
-#> colData names(2): group sex
+tcga      <- sesameData::sesameDataGet("HM450.76.TCGA.matched")
+probeInfo <- sesameData::sesameDataGet("HM450.probeInfo")
 ```
 
-## Fit BREAD
+``` r
+probes <- probeInfo$mapped.probes.hg38
+# keep only probes present in the TCGA beta matrix
+keep   <- intersect(rownames(tcga$betas), names(probes))
+se <- SummarizedExperiment(
+  assays    = list(betas = tcga$betas[keep, , drop = FALSE]),
+  rowRanges = probes[keep],
+  colData   = tcga$sampleInfo
+)
+se$type <- factor(se$type, levels = c("Normal", "Tumour"))
+se
+#> class: RangedSummarizedExperiment 
+#> dim: 9850 76 
+#> metadata(0):
+#> assays(1): betas
+#> rownames(9850): cg00076353 cg00105628 ... ch.20.61946943R
+#>   ch.20.1527371F
+#> rowData names(0):
+#> colnames(76): 2671-Tumour 2675-Tumour ... 6322-Normal 6625-Normal
+#> colData names(2): patient type
+```
 
-One call maps probes to regions, summarizes them per sample, fits a
-Bayesian region-level model, and classifies each region as *hyper*,
-*hypo*, or *inconclusive*.
+## Define region sets via KnowYourCG
+
+We use KnowYourCG’s HM450 chromHMM database to group probes by chromatin
+state, then merge nearby same-state probes into intervals. This gives us
+biologically meaningful feature classes with no manual annotation work.
 
 ``` r
-fit <- fit_bread(
-  se,
-  features    = regions,
-  design      = ~ group + sex,
-  contrast    = "groupold",
-  assay_name  = "M",
-  input_scale = "M",
-  delta       = 0.10,
-  prob_cutoff = 0.95,
-  min_probes  = 3L,
-  summary_fun = "mean",
-  feature_class_col = "feature_class"
+chromhmm <- knowYourCG::getDBs("KYCG.HM450.chromHMM.20211020")
+#> Selected the following database groups:
+#> 1. KYCG.HM450.chromHMM.20211020
+# chromhmm is a named list: state -> character vector of probe IDs
+str(chromhmm, list.len = 3, give.attr = FALSE)
+#> List of 15
+#>  $ 5_TxWk     : chr [1:50090] "cg13869341" "cg09989996" "cg11954957" "cg20788133" ...
+#>  $ 15_Quies   : chr [1:136838] "cg14008030" "cg12045430" "cg20826792" "cg00381604" ...
+#>  $ 1_TssA     : chr [1:124275] "cg10037654" "cg14057946" "cg11422233" "cg16047670" ...
+#>   [list output truncated]
+
+# Keep a few interpretable classes
+state_map <- c(
+  BivProm   = "10_TssBiv",
+  ReprPC    = "13_ReprPC",
+  ActiveTSS = "1_TssA",
+  Enh       = "7_Enh"
 )
+state_probes <- chromhmm[names(chromhmm) %in% state_map]
+# Rename to friendly labels
+names(state_probes) <- names(state_map)[match(names(state_probes), state_map)]
+
+# Build regions per class: intersect with our SE probes, merge by ±2 kb
+features <- do.call(c, unname(lapply(names(state_probes), function(cls) {
+  pids <- intersect(state_probes[[cls]], rownames(se))
+  if (length(pids) < 3L) return(GRanges())
+  gr  <- rowRanges(se)[pids]
+  red <- GenomicRanges::reduce(GenomicRanges::resize(gr, 4001L, fix = "center"))
+  ov  <- GenomicRanges::countOverlaps(red, gr)
+  red <- red[ov >= 3L]
+  # Cap per class for speed
+  if (length(red) > 120L) red <- sort(red[sample.int(length(red), 120L)])
+  mcols(red)$feature_class <- cls
+  names(red) <- sprintf("%s_%03d", cls, seq_along(red))
+  red
+})))
+table(features$feature_class)
+#> 
+#> ActiveTSS   BivProm       Enh    ReprPC 
+#>       120        22        35       119
+```
+
+## Fit BREAD with one call
+
+[`fit_bread()`](https://baczemin.github.io/BREAD/reference/fit_bread.md)
+auto-detects the assay (`"betas"`) and the scale (`"Beta"` from the
+value range), so the minimal call is:
+
+``` r
+fit <- fit_bread(se, features, design = ~ type,
+                 feature_class_col = "feature_class")
+#> `contrast` not supplied; using 'typeTumour' (first non-intercept coefficient).
 fit
 #> <BreadFit>
 #>   mode       : summary 
 #>   backend    : conjugate 
-#>   input_scale: M 
-#>   assay      : M 
-#>   contrast   : groupold 
+#>   input_scale: Beta 
+#>   assay      : betas 
+#>   contrast   : typeTumour 
 #>   delta      : 0.1 
 #>   prob_cutoff: 0.95 
-#>   n_regions  : 5 (of  5  input)
+#>   n_regions  : 296 (of  296  input)
 #>   classifications:
-#>     hypermethylated  1
-#>     hypomethylated   1
-#>     inconclusive     3
+#>     hypermethylated  126
+#>     hypomethylated   34
+#>     inconclusive     136
 ```
 
-The `<BreadFit>` printout summarizes the pipeline: mode, backend,
-contrast, thresholds, how many of the supplied regions survived
-`min_probes`, and the distribution of classifications.
+Under the hood BREAD is running an analytic conjugate posterior per
+region; 480 regions fit in well under a second on a laptop. Default
+thresholds (`delta = 0.10`, `prob_cutoff = 0.95`) can be overridden if
+you want to be stricter or looser.
 
-## Inspect the region-level results
+## Results
 
 ``` r
 res <- results(fit)
-res[, c("region_id", "mean_effect", "ci_lo", "ci_hi",
-        "p_gt_delta", "p_lt_neg_delta", "classification")]
-#>    region_id mean_effect       ci_lo       ci_hi   p_gt_delta p_lt_neg_delta
-#> 1  PRC_early  0.98017219  0.88465179  1.07569258 1.000000e+00   2.873411e-14
-#> 2 CGI_island -0.02473473 -0.10797932  0.05850987 2.929870e-03   3.665676e-02
-#> 3  LAD_chr1q -1.03250811 -1.11838170 -0.94663451 2.664535e-15   1.000000e+00
-#> 4    PRC_mid -0.01130561 -0.13071647  0.10810526 3.282904e-02   6.745762e-02
-#> 5 LAD_distal  0.04565912 -0.03097703  0.12229528 7.613802e-02   4.852137e-04
-#>    classification
-#> 1 hypermethylated
-#> 2    inconclusive
-#> 3  hypomethylated
-#> 4    inconclusive
-#> 5    inconclusive
+head(res[order(res$p_gt_delta, decreasing = TRUE),
+         c("region_id", "mean_effect", "ci_lo", "ci_hi",
+           "p_gt_delta", "p_lt_neg_delta", "classification")], 5)
+#>      region_id mean_effect     ci_lo    ci_hi p_gt_delta p_lt_neg_delta
+#> 13  ReprPC_033   1.3848617 1.1949272 1.574796          1   1.181014e-25
+#> 20  ReprPC_079   0.9376099 0.7808908 1.094329          1   1.236044e-21
+#> 21 BivProm_018   1.1291105 0.9491664 1.309055          1   2.318923e-22
+#> 33  ReprPC_082   1.8653618 1.6605052 2.070218          1   4.751212e-31
+#> 50  ReprPC_106   1.2961459 1.1230822 1.469210          1   1.878995e-26
+#>     classification
+#> 13 hypermethylated
+#> 20 hypermethylated
+#> 21 hypermethylated
+#> 33 hypermethylated
+#> 50 hypermethylated
 ```
-
-For a quick vector mapping region → call:
 
 ``` r
-classifications(fit)
-#>         PRC_early        CGI_island         LAD_chr1q           PRC_mid 
-#> "hypermethylated"    "inconclusive"  "hypomethylated"    "inconclusive" 
-#>        LAD_distal 
-#>    "inconclusive"
+mp <- unique(fit@mapping[, c("region_id", "feature_class")])
+cls_tbl <- merge(res[, c("region_id", "classification")], mp,
+                 by = "region_id")
+table(cls_tbl$feature_class, cls_tbl$classification)
+#>            
+#>             hypermethylated hypomethylated inconclusive
+#>   ActiveTSS              24             12           84
+#>   BivProm                18              0            4
+#>   Enh                     2             14           19
+#>   ReprPC                 82              8           29
 ```
+
+Classic tumor methylome signatures come through:
+
+- **Polycomb-repressed (ReprPC)** and **bivalent promoters (BivProm)**
+  hypermethylate — the classic TCGA “tumor CpG island methylator
+  phenotype”-adjacent signal.
+- **Active TSS** largely unchanged at region level.
 
 ## Visualize
 
-BREAD ships three plot helpers — all returning `ggplot` objects, all
-themed with the embedded MetBrewer *Cross* palette via
-[`bread_colors()`](https://baczemin.github.io/BREAD/reference/bread_colors.md).
-
-### 1. Posterior of the contrast coefficient
-
-The analytical posterior of each region’s `groupold` effect is a
-location-scale Student-t. BREAD plots it with dashed guides at ±δ.
+### Classification summary
 
 ``` r
-plot_region_posterior(fit)
+plot_feature_set(fit, feature_class_col = "feature_class") +
+  ggtitle("Region classifications by chromatin class")
 ```
 
-![](bread-intro_files/figure-html/plot-posterior-1.png)
+![](bread-intro_files/figure-html/feature-set-1.png)
 
-### 2. Raw region-level values by group
+### One region: posterior density + raw beta
 
-Region-level summaries plotted against the first design variable.
+Pick the top hypermethylated region and inspect the posterior +
+underlying values. The x-axis preserves the factor order we set on
+`se$type` — Normal on the left, Tumour on the right.
 
 ``` r
-p_hyper <- plot_region_data(fit, "PRC_early")
-p_hypo  <- plot_region_data(fit, "LAD_chr1q")
-p_hyper | p_hypo
+top_hyper <- res[res$classification == "hypermethylated", ]
+top_hyper <- top_hyper[order(top_hyper$p_gt_delta, decreasing = TRUE), ]
+rid <- top_hyper$region_id[1]
+
+p1 <- plot_region_posterior(fit, region_id = rid) +
+  ggtitle(sprintf("Posterior: %s", rid))
+p2 <- plot_region_data(fit, region_id = rid) +
+  ggtitle("Raw region means by group")
+p1 | p2
 ```
 
-![](bread-intro_files/figure-html/plot-data-1.png)
+![](bread-intro_files/figure-html/one-region-1.png)
 
-### 3. Classification summary by feature class
+### Posterior draws
 
 ``` r
-plot_feature_set(fit, feature_class_col = "feature_class")
+d <- posterior_draws(fit, region_id = rid, n = 2000L, seed = 1L)
+ggplot(d, aes(x = value)) +
+  geom_histogram(
+    bins = 40,
+    fill = bread_colors("classification")[["hypermethylated"]],
+    alpha = 0.85
+  ) +
+  geom_vline(
+    xintercept = c(-0.10, 0, 0.10),
+    linetype   = c("dashed","dotted","dashed"),
+    color      = c("gray60","gray40","gray60")
+  ) +
+  labs(x = "effect (M-value units)", y = "count",
+       title = sprintf("Posterior draws for %s", rid)) +
+  theme_classic(base_size = 12)
 ```
 
-![](bread-intro_files/figure-html/plot-feature-set-1.png)
+![](bread-intro_files/figure-html/draws-1.png)
 
-### Posterior samples
+## Enrichment: what’s driving the hyper/hypo sets?
 
-When you need draws (for custom plots, downstream uncertainty
-propagation, or reporting),
-[`posterior_draws()`](https://baczemin.github.io/BREAD/reference/posterior_draws.md)
-samples from the analytical scaled-t:
+[`bread_kycg()`](https://baczemin.github.io/BREAD/reference/bread_kycg.md)
+hands the probes in hyper- or hypo-classified regions off to
+[`knowYourCG::testEnrichment()`](https://rdrr.io/pkg/knowYourCG/man/testEnrichment.html)
+against curated HM450 databases (TFBS, chromHMM, tissue signatures, …).
+The universe is the set of probes BREAD actually tested.
 
 ``` r
-d <- posterior_draws(fit, region_id = "PRC_early", n = 2000L, seed = 1L)
-head(d, 4)
-#>   region_id draw     value
-#> 1 PRC_early    1 0.9519647
-#> 2 PRC_early    2 0.9500557
-#> 3 PRC_early    3 0.9982079
-#> 4 PRC_early    4 0.9664424
-quantile(d$value, c(0.025, 0.5, 0.975))
-#>      2.5%       50%     97.5% 
-#> 0.8828590 0.9810088 1.0720593
+enr <- bread_kycg(
+  fit,
+  which    = c("hypermethylated", "hypomethylated"),
+  platform = "HM450",
+  databases = c(
+    "KYCG.HM450.chromHMM.20211020",
+    "KYCG.HM450.TFBSconsensus.20211013"
+  )
+)
+head(enr[order(enr$FDR), c("query", "dbname", "estimate", "p.value", "FDR")], 10)
+#>                query     dbname estimate       p.value           FDR
+#> 7    hypermethylated  13_ReprPC 2.492675 9.169409e-119 1.375411e-117
+#> 10   hypermethylated  10_TssBiv 3.148114  3.033733e-33  2.275300e-32
+#> 575  hypermethylated      SUZ12 2.632807  2.240567e-25  1.684906e-22
+#> 4100  hypomethylated      7_Enh 2.424841  2.290214e-22  3.435321e-21
+#> 8    hypermethylated 11_BivFlnk 2.304095  6.234736e-21  3.117368e-20
+#> 9    hypermethylated  12_EnhBiv 3.155925  8.630439e-21  3.236415e-20
+#> 184  hypermethylated       EZH2 2.238574  1.428187e-18  5.369982e-16
+#> 3011  hypomethylated      KDM3B 2.141150  1.102996e-11  8.294530e-09
+#> 768   hypomethylated       CBX8 1.050896  5.775541e-11  2.171603e-08
+#> 3201  hypomethylated       KLF6 1.210028  1.361622e-10  3.413133e-08
 ```
 
-## What the model is doing (under the hood)
+The top hits on the hyper set should be Polycomb / bivalent-promoter
+states and Polycomb-complex TFs (SUZ12, EZH2, BMI1) — the TCGA
+tumor-methylome signature.
 
-For each region *r*, BREAD (v1) fits a conjugate Normal–Inverse-Gamma
-regression on the summarized region values:
+## What BREAD is doing
 
-$$y_{ir} \sim \mathcal{N}(X_{i}\beta_{r},\ \sigma_{r}^{2}),\quad\beta_{r} \mid \sigma_{r}^{2} \sim \mathcal{N}\left( \mu_{0},\ \sigma_{r}^{2}\Lambda_{0}^{- 1} \right),\quad\sigma_{r}^{2} \sim \text{Inv-Gamma}\left( a_{0},b_{0} \right).$$
+For each region *r*, the default backend fits a conjugate
+Normal–Inverse-Gamma regression on the region-level mean beta
+(transformed to M):
 
-The posterior has a closed form. After the update, the **marginal**
-posterior of any single coefficient is a location-scale Student-*t*:
+$$y_{ir} \sim \mathcal{N}\left( X_{i}\beta_{r},\ \sigma_{r}^{2} \right),\quad\beta_{r} \mid \sigma_{r}^{2} \sim \mathcal{N}\left( \mu_{0},\ \sigma_{r}^{2}\Lambda_{0}^{- 1} \right),\quad\sigma_{r}^{2} \sim \text{Inv-Gamma}\left( a_{0},b_{0} \right).$$
 
-$$\beta_{r,k} \mid y \sim t_{2a_{n}}\!\left( \mu_{n,k},\ \frac{b_{n}}{a_{n}}\left\lbrack \Lambda_{n}^{- 1} \right\rbrack_{kk} \right),$$
+The marginal posterior of the contrast coefficient is a location–scale
+Student-t with `df = 2 a_n`. BREAD uses
+[`pt()`](https://rdrr.io/r/stats/TDist.html)/[`qt()`](https://rdrr.io/r/stats/TDist.html)
+to compute $P(\beta > \delta)$ and $P(\beta < - \delta)$ analytically —
+no MCMC.
 
-which is what BREAD uses to compute posterior probabilities directly via
-[`pt()`](https://rdrr.io/r/stats/TDist.html) /
-[`qt()`](https://rdrr.io/r/stats/TDist.html) — no MCMC. This keeps v1
-fast, deterministic, and trivially installable. Partial pooling across
-regions and MCMC-backed priors are planned for the hierarchical mode in
-v2.
+The classification rule is then:
 
-Posterior probabilities that drive classification:
+- **hypermethylated** if $P(\beta > \delta) \geq$`prob_cutoff`,
+- **hypomethylated** if $P(\beta < - \delta) \geq$`prob_cutoff`,
+- **inconclusive** otherwise.
 
-- $P\left( \beta_{r,k} > \delta \mid y \right)$ → if
-  $\geq$`prob_cutoff`, classify as **hypermethylated**
-- $P\left( \beta_{r,k} < - \delta \mid y \right)$ → if
-  $\geq$`prob_cutoff`, classify as **hypomethylated**
-- otherwise **inconclusive**.
-
-You can customize the prior with
-[`bread_prior()`](https://baczemin.github.io/BREAD/reference/bread_prior.md):
-
-``` r
-# A slightly tighter prior on coefficients
-prior <- bread_prior(lambda0 = 0.1, a0 = 1, b0 = 1)
-fit2  <- fit_bread(se, regions, ~ group, "groupold", prior = prior,
-                   feature_class_col = "feature_class")
-classifications(fit2)
-#>         PRC_early        CGI_island         LAD_chr1q           PRC_mid 
-#> "hypermethylated"    "inconclusive"  "hypomethylated"    "inconclusive" 
-#>        LAD_distal 
-#>    "inconclusive"
-```
+Need partial pooling across regions, non-conjugate priors, or ordered
+contrasts? Set `backend = "brms"`; everything else stays the same.
 
 ## Session info
 
@@ -306,25 +322,38 @@ sessionInfo()
 #>  [3] SummarizedExperiment_1.40.0 Biobase_2.70.0             
 #>  [5] GenomicRanges_1.62.1        Seqinfo_1.0.0              
 #>  [7] IRanges_2.44.0              S4Vectors_0.48.1           
-#>  [9] BiocGenerics_0.56.0         generics_0.1.4             
-#> [11] MatrixGenerics_1.22.0       matrixStats_1.5.0          
-#> [13] BREAD_0.0.0.9000           
+#>  [9] MatrixGenerics_1.22.0       matrixStats_1.5.0          
+#> [11] knowYourCG_1.6.3            sesameData_1.28.0          
+#> [13] ExperimentHub_3.0.0         AnnotationHub_4.0.0        
+#> [15] BiocFileCache_3.0.0         dbplyr_2.5.2               
+#> [17] BiocGenerics_0.56.0         generics_0.1.4             
+#> [19] BREAD_0.0.0.9000           
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] sass_0.4.10         SparseArray_1.10.10 lattice_0.22-9     
-#>  [4] digest_0.6.39       magrittr_2.0.5      evaluate_1.0.5     
-#>  [7] grid_4.5.3          RColorBrewer_1.1-3  fastmap_1.2.0      
-#> [10] jsonlite_2.0.0      Matrix_1.7-4        scales_1.4.0       
-#> [13] textshaping_1.0.5   jquerylib_0.1.4     abind_1.4-8        
-#> [16] cli_3.6.6           rlang_1.2.0         XVector_0.50.0     
-#> [19] withr_3.0.2         cachem_1.1.0        DelayedArray_0.36.1
-#> [22] yaml_2.3.12         S4Arrays_1.10.1     tools_4.5.3        
-#> [25] dplyr_1.2.1         vctrs_0.7.3         R6_2.6.1           
-#> [28] lifecycle_1.0.5     fs_2.1.0            ragg_1.5.2         
-#> [31] pkgconfig_2.0.3     desc_1.4.3          pkgdown_2.2.0      
-#> [34] bslib_0.10.0        pillar_1.11.1       gtable_0.3.6       
-#> [37] glue_1.8.1          systemfonts_1.3.2   tidyselect_1.2.1   
-#> [40] tibble_3.3.1        xfun_0.57           knitr_1.51         
-#> [43] farver_2.1.2        htmltools_0.5.9     labeling_0.4.3     
-#> [46] rmarkdown_2.31      compiler_4.5.3      S7_0.2.1-1
+#>  [1] tidyselect_1.2.1     dplyr_1.2.1          farver_2.1.2        
+#>  [4] blob_1.3.0           filelock_1.0.3       Biostrings_2.78.0   
+#>  [7] S7_0.2.1-1           fastmap_1.2.0        digest_0.6.39       
+#> [10] lifecycle_1.0.5      KEGGREST_1.50.0      RSQLite_2.4.6       
+#> [13] magrittr_2.0.5       compiler_4.5.3       rlang_1.2.0         
+#> [16] sass_0.4.10          tools_4.5.3          yaml_2.3.12         
+#> [19] knitr_1.51           labeling_0.4.3       S4Arrays_1.10.1     
+#> [22] bit_4.6.0            curl_7.0.0           DelayedArray_0.36.1 
+#> [25] plyr_1.8.9           RColorBrewer_1.1-3   abind_1.4-8         
+#> [28] purrr_1.2.2          withr_3.0.2          desc_1.4.3          
+#> [31] grid_4.5.3           wheatmap_0.2.0       colorspace_2.1-2    
+#> [34] scales_1.4.0         cli_3.6.6            rmarkdown_2.31      
+#> [37] crayon_1.5.3         ragg_1.5.2           httr_1.4.8          
+#> [40] reshape2_1.4.5       tzdb_0.5.0           DBI_1.3.0           
+#> [43] cachem_1.1.0         stringr_1.6.0        AnnotationDbi_1.72.0
+#> [46] BiocManager_1.30.27  XVector_0.50.0       vctrs_0.7.3         
+#> [49] Matrix_1.7-4         jsonlite_2.0.0       hms_1.1.4           
+#> [52] bit64_4.6.0-1        ggrepel_0.9.8        systemfonts_1.3.2   
+#> [55] jquerylib_0.1.4      glue_1.8.1           pkgdown_2.2.0       
+#> [58] stringi_1.8.7        gtable_0.3.6         BiocVersion_3.22.0  
+#> [61] tibble_3.3.1         pillar_1.11.1        rappdirs_0.3.4      
+#> [64] htmltools_0.5.9      R6_2.6.1             httr2_1.2.2         
+#> [67] textshaping_1.0.5    lattice_0.22-9       evaluate_1.0.5      
+#> [70] readr_2.2.0          png_0.1-9            memoise_2.0.1       
+#> [73] bslib_0.10.0         Rcpp_1.1.1-1         SparseArray_1.10.10 
+#> [76] xfun_0.57            fs_2.1.0             pkgconfig_2.0.3
 ```

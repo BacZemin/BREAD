@@ -18,20 +18,16 @@ fit_bread(
   features,
   design,
   contrast = NULL,
-  assay_name = "M",
-  input_scale = c("M", "Beta"),
-  mode = c("summary", "hierarchical"),
-  summary_fun = c("mean", "median", "weighted_mean", "pc1"),
   delta = 0.1,
   prob_cutoff = 0.95,
   min_probes = 3L,
   feature_class_col = NULL,
-  backend = c("conjugate", "brms", "cmdstanr"),
+  summary_fun = c("mean", "median", "weighted_mean", "pc1"),
+  assay_name = NULL,
+  input_scale = NULL,
+  backend = c("conjugate", "brms"),
   prior = NULL,
-  iter = 2000L,
-  chains = 4L,
-  cores = 4L,
-  seed = 1L
+  ...
 )
 ```
 
@@ -58,23 +54,6 @@ fit_bread(
   Character coefficient name of interest. If `NULL` (default), the first
   non-intercept coefficient is used and a message is emitted.
 
-- assay_name:
-
-  Assay name in `se`. Default `"M"`.
-
-- input_scale:
-
-  `"M"` or `"Beta"`. Beta inputs are converted to M internally.
-
-- mode:
-
-  `"summary"` (v1) or `"hierarchical"` (planned).
-
-- summary_fun:
-
-  Region summary: `"mean"` (default), `"median"`, `"weighted_mean"`,
-  `"pc1"`.
-
 - delta:
 
   Effect-size threshold on the M-value scale. Default `0.10`.
@@ -89,23 +68,37 @@ fit_bread(
 
 - feature_class_col:
 
-  Column in `mcols(features)` giving feature class (reserved for
-  class-level pooling in M3).
+  Column in `mcols(features)` giving feature class (used by
+  [`plot_feature_set()`](https://baczemin.github.io/BREAD/reference/plot_feature_set.md);
+  reserved for class-level pooling in M3).
+
+- summary_fun:
+
+  Region summary: `"mean"` (default), `"median"`, `"weighted_mean"`, or
+  `"pc1"`.
+
+- assay_name:
+
+  Assay name in `se`. `NULL` auto-detects.
+
+- input_scale:
+
+  `"M"` or `"Beta"`. `NULL` auto-detects from value range.
 
 - backend:
 
-  One of `"conjugate"` (default, v1), `"brms"`, `"cmdstanr"`.
+  One of `"conjugate"` (default) or `"brms"`.
 
 - prior:
 
-  A
+  Optional
   [`bread_prior()`](https://baczemin.github.io/BREAD/reference/bread_prior.md)
-  object or `NULL` for defaults.
+  object (conjugate backend only).
 
-- iter, chains, cores, seed:
+- ...:
 
-  MCMC settings. Reserved for `"brms"` / `"cmdstanr"` backends; ignored
-  under `"conjugate"`.
+  Additional arguments forwarded to the backend. For `backend = "brms"`,
+  this accepts `iter`, `chains`, `cores`, `seed`, etc.
 
 ## Value
 
@@ -117,19 +110,35 @@ or
 [`posterior_draws()`](https://baczemin.github.io/BREAD/reference/posterior_draws.md)
 to inspect.
 
-## v1 backend
+## Minimal call
 
-`fit_bread()` uses an exact conjugate Normal-Inverse-Gamma posterior
-(`backend = "conjugate"`). `"brms"` and `"cmdstanr"` are planned for v2
-(needed for partial pooling, non-conjugate priors, hierarchical mode)
-and currently error. The MCMC arguments `iter`, `chains`, `cores`,
-`seed` are reserved for those backends and are no-ops under
-`"conjugate"`.
+The typical call is:
+
+    fit_bread(se, features, ~ condition)
+
+Everything else has a sensible default. In particular:
+
+- `contrast` defaults to the first non-intercept coefficient,
+
+- `assay_name` auto-detects from the first assay that looks like
+  methylation (prefers `"M"`, `"betas"`, `"Beta"`, `"beta"`),
+
+- `input_scale` auto-detects from the assay value range (`[0,1]` →
+  `"Beta"`, otherwise `"M"`).
+
+## Backends
+
+Default is an exact conjugate Normal-Inverse-Gamma posterior (fast, no
+MCMC). `backend = "brms"` routes to
+[`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) (one
+compile + per-region updates); MCMC controls `iter`, `chains`, `cores`,
+`seed` can be passed through `...` to
+[`fit_bread_brms()`](https://baczemin.github.io/BREAD/reference/fit_bread_brms.md).
 
 ## See also
 
 [`validate_bread_input()`](https://baczemin.github.io/BREAD/reference/validate_bread_input.md),
 [`map_probes_to_features()`](https://baczemin.github.io/BREAD/reference/map_probes_to_features.md),
 [`summarize_features()`](https://baczemin.github.io/BREAD/reference/summarize_features.md),
-[`brms::posterior_summary()`](https://paulbuerkner.com/brms/reference/posterior_summary.html),
+[`posterior_summary()`](https://baczemin.github.io/BREAD/reference/posterior_summary.md),
 [`classify_regions()`](https://baczemin.github.io/BREAD/reference/classify_regions.md)

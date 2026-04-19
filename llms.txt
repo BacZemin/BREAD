@@ -67,6 +67,15 @@ inspect intermediate output or plug BREAD into a larger workflow.
 - [`bread_colors()`](https://baczemin.github.io/BREAD/reference/bread_colors.md)
   : BREAD color palettes (MetBrewer "Cross")
 
+## Enrichment
+
+Post-hoc annotation of a BreadFit’s hyper / hypo regions against
+KnowYourCG reference databases (TFBS, chromHMM, CGI, tissue signatures,
+…).
+
+- [`bread_kycg()`](https://baczemin.github.io/BREAD/reference/bread_kycg.md)
+  : Enrich BREAD classifications against KnowYourCG databases
+
 ## Classes and methods
 
 - [`BreadFit`](https://baczemin.github.io/BREAD/reference/BreadFit.md)

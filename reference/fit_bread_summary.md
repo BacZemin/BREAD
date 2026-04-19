@@ -4,7 +4,7 @@ v1 MVP fit. For each region, fits a Normal linear regression
 `y ~ design` with a conjugate Normal-Inverse-Gamma prior, yielding an
 analytical posterior — no MCMC. The marginal posterior of each
 coefficient is a location-scale Student-t, used downstream by
-[`brms::posterior_summary()`](https://paulbuerkner.com/brms/reference/posterior_summary.html).
+[`posterior_summary()`](https://baczemin.github.io/BREAD/reference/posterior_summary.md).
 
 ## Usage
 

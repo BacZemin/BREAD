@@ -90,12 +90,9 @@ fit_aging <- fit_bread(
   features      = reg,
   design        = ~ passage,
   contrast      = "passagelate",
-  assay_name    = "betas",
-  input_scale   = "Beta",
   delta         = 0.10,
   prob_cutoff   = 0.95,
   min_probes    = 3L,
-  summary_fun   = "mean",
   feature_class_col = "feature_class"
 )
 #> Loading required namespace: GenomeInfoDb
@@ -158,8 +155,6 @@ fit_vitc <- fit_bread(
   features      = reg,
   design        = ~ condition,
   contrast      = "conditionaa57",
-  assay_name    = "betas",
-  input_scale   = "Beta",
   delta         = 0.10,
   prob_cutoff   = 0.95,
   min_probes    = 3L,

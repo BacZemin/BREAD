@@ -81,288 +81,304 @@ Park</h4>
     
     
 <div class="section level2">
-<h2 id="what-bread-is-for">What BREAD is for<a class="anchor" aria-label="anchor" href="#what-bread-is-for"></a>
+<h2 id="why-bread">Why BREAD?<a class="anchor" aria-label="anchor" href="#why-bread"></a>
 </h2>
 <p>Many methylation studies are not purely discovery-oriented. Instead
 of asking <em>“which CpGs are significant genome-wide?”</em>, the
-question is often:</p>
+question is often region-centric:</p>
 <ul>
-<li>Are <strong>PRC2 target regions</strong> hypermethylated in old
-vs. young samples?</li>
-<li>Do <strong>bivalent promoters</strong> coherently lose methylation
-after treatment?</li>
-<li>Among my <strong>predefined chromatin classes</strong> (LADs, PMDs,
-CGIs, …), which show strong directional evidence at a biologically
-meaningful effect size?</li>
+<li>Are <strong>bivalent promoters</strong> hypermethylated in tumor
+vs. normal?</li>
+<li>Do <strong>PMD-like heterochromatin regions</strong> lose
+methylation in aging?</li>
+<li>Which of my <strong>predefined chromatin classes</strong> show
+coherent change?</li>
 </ul>
-<p>Existing tooling is strong for genome-wide hypothesis testing, but
-answering those questions directly benefits from:</p>
-<ol style="list-style-type: decimal">
-<li>
-<strong>region-centric</strong> inference (one answer per region,
-not per CpG),</li>
-<li>
-<strong>threshold-based</strong> decisions on biologically
-meaningful effect sizes,</li>
-<li>
-<strong>posterior probabilities</strong> rather than p-values,</li>
-<li><em>borrowing strength across probes inside a region.</em></li>
-</ol>
-<p>BREAD provides a minimal, interpretable Bayesian workflow for exactly
-these targeted questions, built around <code>SummarizedExperiment</code>
-and <code>GRanges</code>.</p>
+<p>BREAD answers those questions directly, returning posterior
+probabilities per region at a biologically meaningful effect-size
+threshold.</p>
 </div>
 <div class="section level2">
-<h2 id="install-and-load">Install and load<a class="anchor" aria-label="anchor" href="#install-and-load"></a>
+<h2 id="a-real-data-demo-tcga-matched-tumornormal-hm450">A real-data demo: TCGA matched tumor–normal (HM450)<a class="anchor" aria-label="anchor" href="#a-real-data-demo-tcga-matched-tumornormal-hm450"></a>
 </h2>
+<p>We use <code>HM450.76.TCGA.matched</code> from
+<strong><code>sesameData</code></strong> — 10,042 HM450 probes × 76
+samples (38 patients each with matched Normal + Tumour). This is a
+strong, well-understood signal: tumors show broad hypermethylation at
+Polycomb targets and hypomethylation in partially-methylated / quiescent
+regions.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/BacZemin/BREAD" class="external-link">BREAD</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/zwdzwd/sesame" class="external-link">sesameData</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/zhou-lab/knowYourCG" class="external-link">knowYourCG</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/SummarizedExperiment" class="external-link">SummarizedExperiment</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/GenomicRanges" class="external-link">GenomicRanges</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="build-a-toy-young-vs-old-methylation-experiment">Build a toy young-vs-old methylation experiment<a class="anchor" aria-label="anchor" href="#build-a-toy-young-vs-old-methylation-experiment"></a>
-</h2>
-<p>We simulate 60 CpG probes on chromosome 1 spaced every 1 kb, across
-16 samples (8 young, 8 old). We define five regions of interest — a mix
-of PRC-like, CGI-like, and LAD-like feature classes — and inject a
-strong hyper or hypo signal into a few of them so we can see BREAD
-recover them.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">n_probes</span>  <span class="op">&lt;-</span> <span class="fl">60L</span></span>
-<span><span class="va">n_samples</span> <span class="op">&lt;-</span> <span class="fl">16L</span></span>
-<span></span>
-<span><span class="co"># Probe-level GRanges (rowRanges of the SE)</span></span>
-<span><span class="va">probes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a></span><span class="op">(</span></span>
-<span>  seqnames <span class="op">=</span> <span class="st">"chr1"</span>,</span>
-<span>  ranges   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/IRanges-constructor.html" class="external-link">IRanges</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1L</span>, by <span class="op">=</span> <span class="fl">1000L</span>, length.out <span class="op">=</span> <span class="va">n_probes</span><span class="op">)</span>,</span>
-<span>                     width <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">probes</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"cg%04d"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_probes</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Sample metadata</span></span>
-<span><span class="va">coldata</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span></span>
-<span>  group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"young"</span>, <span class="st">"old"</span><span class="op">)</span>, each <span class="op">=</span> <span class="va">n_samples</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                 levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"young"</span>, <span class="st">"old"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  sex   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"M"</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="va">n_samples</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"S%02d"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_samples</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Baseline M-values: noise centered at 0</span></span>
-<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_probes</span> <span class="op">*</span> <span class="va">n_samples</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span>,</span>
-<span>  nrow <span class="op">=</span> <span class="va">n_probes</span>,</span>
-<span>  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">probes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">coldata</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Regions we care about (biologically predefined sets)</span></span>
-<span><span class="va">regions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a></span><span class="op">(</span></span>
-<span>  seqnames <span class="op">=</span> <span class="st">"chr1"</span>,</span>
-<span>  ranges   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/IRanges-constructor.html" class="external-link">IRanges</a></span><span class="op">(</span></span>
-<span>    start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>    <span class="fl">1L</span>, <span class="fl">10001L</span>, <span class="fl">20001L</span>, <span class="fl">30001L</span>, <span class="fl">45001L</span><span class="op">)</span>,</span>
-<span>    end   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10000L</span>, <span class="fl">19000L</span>, <span class="fl">28000L</span>, <span class="fl">40000L</span>, <span class="fl">55000L</span><span class="op">)</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  feature_class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PRC"</span>, <span class="st">"CGI"</span>, <span class="st">"LAD"</span>, <span class="st">"PRC"</span>, <span class="st">"LAD"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">regions</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PRC_early"</span>, <span class="st">"CGI_island"</span>, <span class="st">"LAD_chr1q"</span>,</span>
-<span>                    <span class="st">"PRC_mid"</span>,   <span class="st">"LAD_distal"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Inject signal: in "old" samples, PRC_early gains ~1 M-value, LAD_chr1q loses ~1.</span></span>
-<span><span class="co"># CGI_island, PRC_mid, LAD_distal are left at baseline (should come out inconclusive).</span></span>
-<span><span class="va">old_mask</span> <span class="op">&lt;-</span> <span class="va">coldata</span><span class="op">$</span><span class="va">group</span> <span class="op">==</span> <span class="st">"old"</span></span>
-<span><span class="va">probe_in</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">gr</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu">IRanges</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/findOverlaps-methods.html" class="external-link">overlapsAny</a></span><span class="op">(</span><span class="va">probes</span>, <span class="va">gr</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">X</span><span class="op">[</span><span class="fu">probe_in</span><span class="op">(</span><span class="va">regions</span><span class="op">[</span><span class="st">"PRC_early"</span><span class="op">]</span><span class="op">)</span>, <span class="va">old_mask</span><span class="op">]</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">X</span><span class="op">[</span><span class="fu">probe_in</span><span class="op">(</span><span class="va">regions</span><span class="op">[</span><span class="st">"PRC_early"</span><span class="op">]</span><span class="op">)</span>, <span class="va">old_mask</span><span class="op">]</span> <span class="op">+</span> <span class="fl">1.0</span></span>
-<span><span class="va">X</span><span class="op">[</span><span class="fu">probe_in</span><span class="op">(</span><span class="va">regions</span><span class="op">[</span><span class="st">"LAD_chr1q"</span><span class="op">]</span><span class="op">)</span>, <span class="va">old_mask</span><span class="op">]</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">X</span><span class="op">[</span><span class="fu">probe_in</span><span class="op">(</span><span class="va">regions</span><span class="op">[</span><span class="st">"LAD_chr1q"</span><span class="op">]</span><span class="op">)</span>, <span class="va">old_mask</span><span class="op">]</span> <span class="op">-</span> <span class="fl">1.0</span></span>
-<span></span>
+<code class="sourceCode R"><span><span class="va">tcga</span>      <span class="op">&lt;-</span> <span class="fu">sesameData</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/sesameData/man/sesameDataGet.html" class="external-link">sesameDataGet</a></span><span class="op">(</span><span class="st">"HM450.76.TCGA.matched"</span><span class="op">)</span></span>
+<span><span class="va">probeInfo</span> <span class="op">&lt;-</span> <span class="fu">sesameData</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/sesameData/man/sesameDataGet.html" class="external-link">sesameDataGet</a></span><span class="op">(</span><span class="st">"HM450.probeInfo"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">probes</span> <span class="op">&lt;-</span> <span class="va">probeInfo</span><span class="op">$</span><span class="va">mapped.probes.hg38</span></span>
+<span><span class="co"># keep only probes present in the TCGA beta matrix</span></span>
+<span><span class="va">keep</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tcga</span><span class="op">$</span><span class="va">betas</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">probes</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span></span>
-<span>  assays    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>M <span class="op">=</span> <span class="va">X</span><span class="op">)</span>,</span>
-<span>  rowRanges <span class="op">=</span> <span class="va">probes</span>,</span>
-<span>  colData   <span class="op">=</span> <span class="va">coldata</span></span>
+<span>  assays    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>betas <span class="op">=</span> <span class="va">tcga</span><span class="op">$</span><span class="va">betas</span><span class="op">[</span><span class="va">keep</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  rowRanges <span class="op">=</span> <span class="va">probes</span><span class="op">[</span><span class="va">keep</span><span class="op">]</span>,</span>
+<span>  colData   <span class="op">=</span> <span class="va">tcga</span><span class="op">$</span><span class="va">sampleInfo</span></span>
 <span><span class="op">)</span></span>
+<span><span class="va">se</span><span class="op">$</span><span class="va">type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">se</span><span class="op">$</span><span class="va">type</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Normal"</span>, <span class="st">"Tumour"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">se</span></span>
 <span><span class="co">#&gt; class: RangedSummarizedExperiment </span></span>
-<span><span class="co">#&gt; dim: 60 16 </span></span>
+<span><span class="co">#&gt; dim: 9850 76 </span></span>
 <span><span class="co">#&gt; metadata(0):</span></span>
-<span><span class="co">#&gt; assays(1): M</span></span>
-<span><span class="co">#&gt; rownames(60): cg0001 cg0002 ... cg0059 cg0060</span></span>
+<span><span class="co">#&gt; assays(1): betas</span></span>
+<span><span class="co">#&gt; rownames(9850): cg00076353 cg00105628 ... ch.20.61946943R</span></span>
+<span><span class="co">#&gt;   ch.20.1527371F</span></span>
 <span><span class="co">#&gt; rowData names(0):</span></span>
-<span><span class="co">#&gt; colnames(16): S01 S02 ... S15 S16</span></span>
-<span><span class="co">#&gt; colData names(2): group sex</span></span></code></pre></div>
+<span><span class="co">#&gt; colnames(76): 2671-Tumour 2675-Tumour ... 6322-Normal 6625-Normal</span></span>
+<span><span class="co">#&gt; colData names(2): patient type</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="fit-bread">Fit BREAD<a class="anchor" aria-label="anchor" href="#fit-bread"></a>
+<h2 id="define-region-sets-via-knowyourcg">Define region sets via KnowYourCG<a class="anchor" aria-label="anchor" href="#define-region-sets-via-knowyourcg"></a>
 </h2>
-<p>One call maps probes to regions, summarizes them per sample, fits a
-Bayesian region-level model, and classifies each region as
-<em>hyper</em>, <em>hypo</em>, or <em>inconclusive</em>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_bread.html">fit_bread</a></span><span class="op">(</span></span>
-<span>  <span class="va">se</span>,</span>
-<span>  features    <span class="op">=</span> <span class="va">regions</span>,</span>
-<span>  design      <span class="op">=</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">sex</span>,</span>
-<span>  contrast    <span class="op">=</span> <span class="st">"groupold"</span>,</span>
-<span>  assay_name  <span class="op">=</span> <span class="st">"M"</span>,</span>
-<span>  input_scale <span class="op">=</span> <span class="st">"M"</span>,</span>
-<span>  delta       <span class="op">=</span> <span class="fl">0.10</span>,</span>
-<span>  prob_cutoff <span class="op">=</span> <span class="fl">0.95</span>,</span>
-<span>  min_probes  <span class="op">=</span> <span class="fl">3L</span>,</span>
-<span>  summary_fun <span class="op">=</span> <span class="st">"mean"</span>,</span>
-<span>  feature_class_col <span class="op">=</span> <span class="st">"feature_class"</span></span>
+<p>We use KnowYourCG’s HM450 chromHMM database to group probes by
+chromatin state, then merge nearby same-state probes into intervals.
+This gives us biologically meaningful feature classes with no manual
+annotation work.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">chromhmm</span> <span class="op">&lt;-</span> <span class="fu">knowYourCG</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knowYourCG/man/getDBs.html" class="external-link">getDBs</a></span><span class="op">(</span><span class="st">"KYCG.HM450.chromHMM.20211020"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Selected the following database groups:</span></span>
+<span><span class="co">#&gt; 1. KYCG.HM450.chromHMM.20211020</span></span>
+<span><span class="co"># chromhmm is a named list: state -&gt; character vector of probe IDs</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">chromhmm</span>, list.len <span class="op">=</span> <span class="fl">3</span>, give.attr <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; List of 15</span></span>
+<span><span class="co">#&gt;  $ 5_TxWk     : chr [1:50090] "cg13869341" "cg09989996" "cg11954957" "cg20788133" ...</span></span>
+<span><span class="co">#&gt;  $ 15_Quies   : chr [1:136838] "cg14008030" "cg12045430" "cg20826792" "cg00381604" ...</span></span>
+<span><span class="co">#&gt;  $ 1_TssA     : chr [1:124275] "cg10037654" "cg14057946" "cg11422233" "cg16047670" ...</span></span>
+<span><span class="co">#&gt;   [list output truncated]</span></span>
+<span></span>
+<span><span class="co"># Keep a few interpretable classes</span></span>
+<span><span class="va">state_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  BivProm   <span class="op">=</span> <span class="st">"10_TssBiv"</span>,</span>
+<span>  ReprPC    <span class="op">=</span> <span class="st">"13_ReprPC"</span>,</span>
+<span>  ActiveTSS <span class="op">=</span> <span class="st">"1_TssA"</span>,</span>
+<span>  Enh       <span class="op">=</span> <span class="st">"7_Enh"</span></span>
 <span><span class="op">)</span></span>
+<span><span class="va">state_probes</span> <span class="op">&lt;-</span> <span class="va">chromhmm</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">chromhmm</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="va">state_map</span><span class="op">]</span></span>
+<span><span class="co"># Rename to friendly labels</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">state_probes</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">state_map</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">match</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">state_probes</span><span class="op">)</span>, <span class="va">state_map</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># Build regions per class: intersect with our SE probes, merge by ±2 kb</span></span>
+<span><span class="va">features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">c</span>, <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">state_probes</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">cls</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">pids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">state_probes</span><span class="op">[[</span><span class="va">cls</span><span class="op">]</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pids</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">3L</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">gr</span>  <span class="op">&lt;-</span> <span class="fu">rowRanges</span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">[</span><span class="va">pids</span><span class="op">]</span></span>
+<span>  <span class="va">red</span> <span class="op">&lt;-</span> <span class="fu">GenomicRanges</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/inter-range-methods.html" class="external-link">reduce</a></span><span class="op">(</span><span class="fu">GenomicRanges</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/intra-range-methods.html" class="external-link">resize</a></span><span class="op">(</span><span class="va">gr</span>, <span class="fl">4001L</span>, fix <span class="op">=</span> <span class="st">"center"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">ov</span>  <span class="op">&lt;-</span> <span class="fu">GenomicRanges</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/findOverlaps-methods.html" class="external-link">countOverlaps</a></span><span class="op">(</span><span class="va">red</span>, <span class="va">gr</span><span class="op">)</span></span>
+<span>  <span class="va">red</span> <span class="op">&lt;-</span> <span class="va">red</span><span class="op">[</span><span class="va">ov</span> <span class="op">&gt;=</span> <span class="fl">3L</span><span class="op">]</span></span>
+<span>  <span class="co"># Cap per class for speed</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">red</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">120L</span><span class="op">)</span> <span class="va">red</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">red</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">red</span><span class="op">)</span>, <span class="fl">120L</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">mcols</a></span><span class="op">(</span><span class="va">red</span><span class="op">)</span><span class="op">$</span><span class="va">feature_class</span> <span class="op">&lt;-</span> <span class="va">cls</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">red</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%s_%03d"</span>, <span class="va">cls</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">red</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">red</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">features</span><span class="op">$</span><span class="va">feature_class</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ActiveTSS   BivProm       Enh    ReprPC </span></span>
+<span><span class="co">#&gt;       120        22        35       119</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="fit-bread-with-one-call">Fit BREAD with one call<a class="anchor" aria-label="anchor" href="#fit-bread-with-one-call"></a>
+</h2>
+<p><code><a href="../reference/fit_bread.html">fit_bread()</a></code> auto-detects the assay
+(<code>"betas"</code>) and the scale (<code>"Beta"</code> from the value
+range), so the minimal call is:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_bread.html">fit_bread</a></span><span class="op">(</span><span class="va">se</span>, <span class="va">features</span>, design <span class="op">=</span> <span class="op">~</span> <span class="va">type</span>,</span>
+<span>                 feature_class_col <span class="op">=</span> <span class="st">"feature_class"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; `contrast` not supplied; using 'typeTumour' (first non-intercept coefficient).</span></span>
 <span><span class="va">fit</span></span>
 <span><span class="co">#&gt; &lt;BreadFit&gt;</span></span>
 <span><span class="co">#&gt;   mode       : summary </span></span>
 <span><span class="co">#&gt;   backend    : conjugate </span></span>
-<span><span class="co">#&gt;   input_scale: M </span></span>
-<span><span class="co">#&gt;   assay      : M </span></span>
-<span><span class="co">#&gt;   contrast   : groupold </span></span>
+<span><span class="co">#&gt;   input_scale: Beta </span></span>
+<span><span class="co">#&gt;   assay      : betas </span></span>
+<span><span class="co">#&gt;   contrast   : typeTumour </span></span>
 <span><span class="co">#&gt;   delta      : 0.1 </span></span>
 <span><span class="co">#&gt;   prob_cutoff: 0.95 </span></span>
-<span><span class="co">#&gt;   n_regions  : 5 (of  5  input)</span></span>
+<span><span class="co">#&gt;   n_regions  : 296 (of  296  input)</span></span>
 <span><span class="co">#&gt;   classifications:</span></span>
-<span><span class="co">#&gt;     hypermethylated  1</span></span>
-<span><span class="co">#&gt;     hypomethylated   1</span></span>
-<span><span class="co">#&gt;     inconclusive     3</span></span></code></pre></div>
-<p>The <code>&lt;BreadFit&gt;</code> printout summarizes the pipeline:
-mode, backend, contrast, thresholds, how many of the supplied regions
-survived <code>min_probes</code>, and the distribution of
-classifications.</p>
+<span><span class="co">#&gt;     hypermethylated  126</span></span>
+<span><span class="co">#&gt;     hypomethylated   34</span></span>
+<span><span class="co">#&gt;     inconclusive     136</span></span></code></pre></div>
+<p>Under the hood BREAD is running an analytic conjugate posterior per
+region; 480 regions fit in well under a second on a laptop. Default
+thresholds (<code>delta = 0.10</code>, <code>prob_cutoff = 0.95</code>)
+can be overridden if you want to be stricter or looser.</p>
 </div>
 <div class="section level2">
-<h2 id="inspect-the-region-level-results">Inspect the region-level results<a class="anchor" aria-label="anchor" href="#inspect-the-region-level-results"></a>
+<h2 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/results.html">results</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="va">res</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"region_id"</span>, <span class="st">"mean_effect"</span>, <span class="st">"ci_lo"</span>, <span class="st">"ci_hi"</span>,</span>
-<span>        <span class="st">"p_gt_delta"</span>, <span class="st">"p_lt_neg_delta"</span>, <span class="st">"classification"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;    region_id mean_effect       ci_lo       ci_hi   p_gt_delta p_lt_neg_delta</span></span>
-<span><span class="co">#&gt; 1  PRC_early  0.98017219  0.88465179  1.07569258 1.000000e+00   2.873411e-14</span></span>
-<span><span class="co">#&gt; 2 CGI_island -0.02473473 -0.10797932  0.05850987 2.929870e-03   3.665676e-02</span></span>
-<span><span class="co">#&gt; 3  LAD_chr1q -1.03250811 -1.11838170 -0.94663451 2.664535e-15   1.000000e+00</span></span>
-<span><span class="co">#&gt; 4    PRC_mid -0.01130561 -0.13071647  0.10810526 3.282904e-02   6.745762e-02</span></span>
-<span><span class="co">#&gt; 5 LAD_distal  0.04565912 -0.03097703  0.12229528 7.613802e-02   4.852137e-04</span></span>
-<span><span class="co">#&gt;    classification</span></span>
-<span><span class="co">#&gt; 1 hypermethylated</span></span>
-<span><span class="co">#&gt; 2    inconclusive</span></span>
-<span><span class="co">#&gt; 3  hypomethylated</span></span>
-<span><span class="co">#&gt; 4    inconclusive</span></span>
-<span><span class="co">#&gt; 5    inconclusive</span></span></code></pre></div>
-<p>For a quick vector mapping region → call:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/classifications.html">classifications</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         PRC_early        CGI_island         LAD_chr1q           PRC_mid </span></span>
-<span><span class="co">#&gt; "hypermethylated"    "inconclusive"  "hypomethylated"    "inconclusive" </span></span>
-<span><span class="co">#&gt;        LAD_distal </span></span>
-<span><span class="co">#&gt;    "inconclusive"</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">p_gt_delta</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>         <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"region_id"</span>, <span class="st">"mean_effect"</span>, <span class="st">"ci_lo"</span>, <span class="st">"ci_hi"</span>,</span>
+<span>           <span class="st">"p_gt_delta"</span>, <span class="st">"p_lt_neg_delta"</span>, <span class="st">"classification"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      region_id mean_effect     ci_lo    ci_hi p_gt_delta p_lt_neg_delta</span></span>
+<span><span class="co">#&gt; 13  ReprPC_033   1.3848617 1.1949272 1.574796          1   1.181014e-25</span></span>
+<span><span class="co">#&gt; 20  ReprPC_079   0.9376099 0.7808908 1.094329          1   1.236044e-21</span></span>
+<span><span class="co">#&gt; 21 BivProm_018   1.1291105 0.9491664 1.309055          1   2.318923e-22</span></span>
+<span><span class="co">#&gt; 33  ReprPC_082   1.8653618 1.6605052 2.070218          1   4.751212e-31</span></span>
+<span><span class="co">#&gt; 50  ReprPC_106   1.2961459 1.1230822 1.469210          1   1.878995e-26</span></span>
+<span><span class="co">#&gt;     classification</span></span>
+<span><span class="co">#&gt; 13 hypermethylated</span></span>
+<span><span class="co">#&gt; 20 hypermethylated</span></span>
+<span><span class="co">#&gt; 21 hypermethylated</span></span>
+<span><span class="co">#&gt; 33 hypermethylated</span></span>
+<span><span class="co">#&gt; 50 hypermethylated</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">fit</span><span class="op">@</span><span class="va">mapping</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"region_id"</span>, <span class="st">"feature_class"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">cls_tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">res</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"region_id"</span>, <span class="st">"classification"</span><span class="op">)</span><span class="op">]</span>, <span class="va">mp</span>,</span>
+<span>                 by <span class="op">=</span> <span class="st">"region_id"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cls_tbl</span><span class="op">$</span><span class="va">feature_class</span>, <span class="va">cls_tbl</span><span class="op">$</span><span class="va">classification</span><span class="op">)</span></span>
+<span><span class="co">#&gt;            </span></span>
+<span><span class="co">#&gt;             hypermethylated hypomethylated inconclusive</span></span>
+<span><span class="co">#&gt;   ActiveTSS              24             12           84</span></span>
+<span><span class="co">#&gt;   BivProm                18              0            4</span></span>
+<span><span class="co">#&gt;   Enh                     2             14           19</span></span>
+<span><span class="co">#&gt;   ReprPC                 82              8           29</span></span></code></pre></div>
+<p>Classic tumor methylome signatures come through:</p>
+<ul>
+<li>
+<strong>Polycomb-repressed (ReprPC)</strong> and <strong>bivalent
+promoters (BivProm)</strong> hypermethylate — the classic TCGA “tumor
+CpG island methylator phenotype”-adjacent signal.</li>
+<li>
+<strong>Active TSS</strong> largely unchanged at region level.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="visualize">Visualize<a class="anchor" aria-label="anchor" href="#visualize"></a>
 </h2>
-<p>BREAD ships three plot helpers — all returning <code>ggplot</code>
-objects, all themed with the embedded MetBrewer <em>Cross</em> palette
-via <code><a href="../reference/bread_colors.html">bread_colors()</a></code>.</p>
 <div class="section level3">
-<h3 id="posterior-of-the-contrast-coefficient">1. Posterior of the contrast coefficient<a class="anchor" aria-label="anchor" href="#posterior-of-the-contrast-coefficient"></a>
-</h3>
-<p>The analytical posterior of each region’s <code>groupold</code>
-effect is a location-scale Student-t. BREAD plots it with dashed guides
-at ±δ.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_region_posterior.html">plot_region_posterior</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bread-intro_files/figure-html/plot-posterior-1.png" class="r-plt" alt="" width="840" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level3">
-<h3 id="raw-region-level-values-by-group">2. Raw region-level values by group<a class="anchor" aria-label="anchor" href="#raw-region-level-values-by-group"></a>
-</h3>
-<p>Region-level summaries plotted against the first design variable.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p_hyper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_region_data.html">plot_region_data</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"PRC_early"</span><span class="op">)</span></span>
-<span><span class="va">p_hypo</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_region_data.html">plot_region_data</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"LAD_chr1q"</span><span class="op">)</span></span>
-<span><span class="va">p_hyper</span> <span class="op">|</span> <span class="va">p_hypo</span></span></code></pre></div>
-<p><img src="bread-intro_files/figure-html/plot-data-1.png" class="r-plt" alt="" width="1080" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level3">
-<h3 id="classification-summary-by-feature-class">3. Classification summary by feature class<a class="anchor" aria-label="anchor" href="#classification-summary-by-feature-class"></a>
+<h3 id="classification-summary">Classification summary<a class="anchor" aria-label="anchor" href="#classification-summary"></a>
 </h3>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_feature_set.html">plot_feature_set</a></span><span class="op">(</span><span class="va">fit</span>, feature_class_col <span class="op">=</span> <span class="st">"feature_class"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bread-intro_files/figure-html/plot-feature-set-1.png" class="r-plt" alt="" width="840" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_feature_set.html">plot_feature_set</a></span><span class="op">(</span><span class="va">fit</span>, feature_class_col <span class="op">=</span> <span class="st">"feature_class"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Region classifications by chromatin class"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="bread-intro_files/figure-html/feature-set-1.png" class="r-plt" alt="" width="840" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
-<h3 id="posterior-samples">Posterior samples<a class="anchor" aria-label="anchor" href="#posterior-samples"></a>
+<h3 id="one-region-posterior-density-raw-beta">One region: posterior density + raw beta<a class="anchor" aria-label="anchor" href="#one-region-posterior-density-raw-beta"></a>
 </h3>
-<p>When you need draws (for custom plots, downstream uncertainty
-propagation, or reporting), <code><a href="../reference/posterior_draws.html">posterior_draws()</a></code> samples from
-the analytical scaled-t:</p>
+<p>Pick the top hypermethylated region and inspect the posterior +
+underlying values. The x-axis preserves the factor order we set on
+<code>se$type</code> — Normal on the left, Tumour on the right.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/posterior_draws.html">posterior_draws</a></span><span class="op">(</span><span class="va">fit</span>, region_id <span class="op">=</span> <span class="st">"PRC_early"</span>, n <span class="op">=</span> <span class="fl">2000L</span>, seed <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span>, <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   region_id draw     value</span></span>
-<span><span class="co">#&gt; 1 PRC_early    1 0.9519647</span></span>
-<span><span class="co">#&gt; 2 PRC_early    2 0.9500557</span></span>
-<span><span class="co">#&gt; 3 PRC_early    3 0.9982079</span></span>
-<span><span class="co">#&gt; 4 PRC_early    4 0.9664424</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">value</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      2.5%       50%     97.5% </span></span>
-<span><span class="co">#&gt; 0.8828590 0.9810088 1.0720593</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">top_hyper</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">[</span><span class="va">res</span><span class="op">$</span><span class="va">classification</span> <span class="op">==</span> <span class="st">"hypermethylated"</span>, <span class="op">]</span></span>
+<span><span class="va">top_hyper</span> <span class="op">&lt;-</span> <span class="va">top_hyper</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">top_hyper</span><span class="op">$</span><span class="va">p_gt_delta</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">rid</span> <span class="op">&lt;-</span> <span class="va">top_hyper</span><span class="op">$</span><span class="va">region_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_region_posterior.html">plot_region_posterior</a></span><span class="op">(</span><span class="va">fit</span>, region_id <span class="op">=</span> <span class="va">rid</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Posterior: %s"</span>, <span class="va">rid</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_region_data.html">plot_region_data</a></span><span class="op">(</span><span class="va">fit</span>, region_id <span class="op">=</span> <span class="va">rid</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Raw region means by group"</span><span class="op">)</span></span>
+<span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></span></code></pre></div>
+<p><img src="bread-intro_files/figure-html/one-region-1.png" class="r-plt" alt="" width="1200" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level3">
+<h3 id="posterior-draws">Posterior draws<a class="anchor" aria-label="anchor" href="#posterior-draws"></a>
+</h3>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/posterior_draws.html">posterior_draws</a></span><span class="op">(</span><span class="va">fit</span>, region_id <span class="op">=</span> <span class="va">rid</span>, n <span class="op">=</span> <span class="fl">2000L</span>, seed <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">d</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span></span>
+<span>    bins <span class="op">=</span> <span class="fl">40</span>,</span>
+<span>    fill <span class="op">=</span> <span class="fu"><a href="../reference/bread_colors.html">bread_colors</a></span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span><span class="op">[[</span><span class="st">"hypermethylated"</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.85</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span></span>
+<span>    xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.10</span>, <span class="fl">0</span>, <span class="fl">0.10</span><span class="op">)</span>,</span>
+<span>    linetype   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dashed"</span>,<span class="st">"dotted"</span>,<span class="st">"dashed"</span><span class="op">)</span>,</span>
+<span>    color      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gray60"</span>,<span class="st">"gray40"</span>,<span class="st">"gray60"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"effect (M-value units)"</span>, y <span class="op">=</span> <span class="st">"count"</span>,</span>
+<span>       title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Posterior draws for %s"</span>, <span class="va">rid</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span></code></pre></div>
+<p><img src="bread-intro_files/figure-html/draws-1.png" class="r-plt" alt="" width="840" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="what-the-model-is-doing-under-the-hood">What the model is doing (under the hood)<a class="anchor" aria-label="anchor" href="#what-the-model-is-doing-under-the-hood"></a>
+<h2 id="enrichment-whats-driving-the-hyperhypo-sets">Enrichment: what’s driving the hyper/hypo sets?<a class="anchor" aria-label="anchor" href="#enrichment-whats-driving-the-hyperhypo-sets"></a>
 </h2>
-<p>For each region <em>r</em>, BREAD (v1) fits a conjugate
-Normal–Inverse-Gamma regression on the summarized region values:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mrow><mi>i</mi><mi>r</mi></mrow></msub><mo>∼</mo><mi>𝒩</mi><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mi>i</mi></msub><msub><mi>β</mi><mi>r</mi></msub><mo>,</mo><mspace width="0.222em"></mspace><msubsup><mi>σ</mi><mi>r</mi><mn>2</mn></msubsup><mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="1.0em"></mspace><msub><mi>β</mi><mi>r</mi></msub><mo>∣</mo><msubsup><mi>σ</mi><mi>r</mi><mn>2</mn></msubsup><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mn>0</mn></msub><mo>,</mo><mspace width="0.222em"></mspace><msubsup><mi>σ</mi><mi>r</mi><mn>2</mn></msubsup><msubsup><mi>Λ</mi><mn>0</mn><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="1.0em"></mspace><msubsup><mi>σ</mi><mi>r</mi><mn>2</mn></msubsup><mo>∼</mo><mtext mathvariant="normal">Inv-Gamma</mtext><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>a</mi><mn>0</mn></msub><mo>,</mo><msub><mi>b</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
-y_{ir} \sim \mathcal{N}\bigl(X_i \beta_r,\ \sigma_r^2\bigr),\quad
-\beta_r \mid \sigma_r^2 \sim \mathcal{N}(\mu_0,\ \sigma_r^2 \Lambda_0^{-1}),\quad
+<p><code><a href="../reference/bread_kycg.html">bread_kycg()</a></code> hands the probes in hyper- or
+hypo-classified regions off to <code><a href="https://rdrr.io/pkg/knowYourCG/man/testEnrichment.html" class="external-link">knowYourCG::testEnrichment()</a></code>
+against curated HM450 databases (TFBS, chromHMM, tissue signatures, …).
+The universe is the set of probes BREAD actually tested.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">enr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bread_kycg.html">bread_kycg</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit</span>,</span>
+<span>  which    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hypermethylated"</span>, <span class="st">"hypomethylated"</span><span class="op">)</span>,</span>
+<span>  platform <span class="op">=</span> <span class="st">"HM450"</span>,</span>
+<span>  databases <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"KYCG.HM450.chromHMM.20211020"</span>,</span>
+<span>    <span class="st">"KYCG.HM450.TFBSconsensus.20211013"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">enr</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">enr</span><span class="op">$</span><span class="va">FDR</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"query"</span>, <span class="st">"dbname"</span>, <span class="st">"estimate"</span>, <span class="st">"p.value"</span>, <span class="st">"FDR"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                query     dbname estimate       p.value           FDR</span></span>
+<span><span class="co">#&gt; 7    hypermethylated  13_ReprPC 2.492675 9.169409e-119 1.375411e-117</span></span>
+<span><span class="co">#&gt; 10   hypermethylated  10_TssBiv 3.148114  3.033733e-33  2.275300e-32</span></span>
+<span><span class="co">#&gt; 575  hypermethylated      SUZ12 2.632807  2.240567e-25  1.684906e-22</span></span>
+<span><span class="co">#&gt; 4100  hypomethylated      7_Enh 2.424841  2.290214e-22  3.435321e-21</span></span>
+<span><span class="co">#&gt; 8    hypermethylated 11_BivFlnk 2.304095  6.234736e-21  3.117368e-20</span></span>
+<span><span class="co">#&gt; 9    hypermethylated  12_EnhBiv 3.155925  8.630439e-21  3.236415e-20</span></span>
+<span><span class="co">#&gt; 184  hypermethylated       EZH2 2.238574  1.428187e-18  5.369982e-16</span></span>
+<span><span class="co">#&gt; 3011  hypomethylated      KDM3B 2.141150  1.102996e-11  8.294530e-09</span></span>
+<span><span class="co">#&gt; 768   hypomethylated       CBX8 1.050896  5.775541e-11  2.171603e-08</span></span>
+<span><span class="co">#&gt; 3201  hypomethylated       KLF6 1.210028  1.361622e-10  3.413133e-08</span></span></code></pre></div>
+<p>The top hits on the hyper set should be Polycomb / bivalent-promoter
+states and Polycomb-complex TFs (SUZ12, EZH2, BMI1) — the TCGA
+tumor-methylome signature.</p>
+</div>
+<div class="section level2">
+<h2 id="what-bread-is-doing">What BREAD is doing<a class="anchor" aria-label="anchor" href="#what-bread-is-doing"></a>
+</h2>
+<p>For each region <em>r</em>, the default backend fits a conjugate
+Normal–Inverse-Gamma regression on the region-level mean beta
+(transformed to M):</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mrow><mi>i</mi><mi>r</mi></mrow></msub><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mi>i</mi></msub><msub><mi>β</mi><mi>r</mi></msub><mo>,</mo><mspace width="0.222em"></mspace><msubsup><mi>σ</mi><mi>r</mi><mn>2</mn></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="1.0em"></mspace><msub><mi>β</mi><mi>r</mi></msub><mo>∣</mo><msubsup><mi>σ</mi><mi>r</mi><mn>2</mn></msubsup><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mn>0</mn></msub><mo>,</mo><mspace width="0.222em"></mspace><msubsup><mi>σ</mi><mi>r</mi><mn>2</mn></msubsup><msubsup><mi>Λ</mi><mn>0</mn><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="1.0em"></mspace><msubsup><mi>σ</mi><mi>r</mi><mn>2</mn></msubsup><mo>∼</mo><mtext mathvariant="normal">Inv-Gamma</mtext><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>a</mi><mn>0</mn></msub><mo>,</mo><msub><mi>b</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
+y_{ir} \sim \mathcal{N}(X_i\beta_r,\ \sigma_r^2),\quad
+\beta_r\mid\sigma_r^2 \sim \mathcal{N}(\mu_0,\ \sigma_r^2\Lambda_0^{-1}),\quad
 \sigma_r^2 \sim \text{Inv-Gamma}(a_0, b_0).
 </annotation></semantics></math></p>
-<p>The posterior has a closed form. After the update, the
-<strong>marginal</strong> posterior of any single coefficient is a
-location-scale Student-<em>t</em>:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mrow><mi>r</mi><mo>,</mo><mi>k</mi></mrow></msub><mo>∣</mo><mi>y</mi><mo>∼</mo><msub><mi>t</mi><mrow><mn>2</mn><msub><mi>a</mi><mi>n</mi></msub></mrow></msub><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mrow><mi>n</mi><mo>,</mo><mi>k</mi></mrow></msub><mo>,</mo><mspace width="0.222em"></mspace><mfrac displaystyle="false"><msub><mi>b</mi><mi>n</mi></msub><msub><mi>a</mi><mi>n</mi></msub></mfrac><msub><mrow><mo stretchy="true" form="prefix">[</mo><msubsup><mi>Λ</mi><mi>n</mi><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><mo stretchy="true" form="postfix">]</mo></mrow><mrow><mi>k</mi><mi>k</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
-\beta_{r,k} \mid y \sim t_{2 a_n}\!\left(\mu_{n,k},\ \tfrac{b_n}{a_n} [\Lambda_n^{-1}]_{kk}\right),
-</annotation></semantics></math></p>
-<p>which is what BREAD uses to compute posterior probabilities directly
-via <code><a href="https://rdrr.io/r/stats/TDist.html" class="external-link">pt()</a></code> / <code><a href="https://rdrr.io/r/stats/TDist.html" class="external-link">qt()</a></code> — no MCMC. This keeps v1 fast,
-deterministic, and trivially installable. Partial pooling across regions
-and MCMC-backed priors are planned for the hierarchical mode in v2.</p>
-<p>Posterior probabilities that drive classification:</p>
+<p>The marginal posterior of the contrast coefficient is a
+location–scale Student-t with <code>df = 2 a_n</code>. BREAD uses
+<code><a href="https://rdrr.io/r/stats/TDist.html" class="external-link">pt()</a></code>/<code><a href="https://rdrr.io/r/stats/TDist.html" class="external-link">qt()</a></code> to compute
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mo>&gt;</mo><mi>δ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">P(\beta &gt; \delta)</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mo>&lt;</mo><mo>−</mo><mi>δ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">P(\beta &lt; -\delta)</annotation></semantics></math>
+analytically — no MCMC.</p>
+<p>The classification rule is then:</p>
 <ul>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>β</mi><mrow><mi>r</mi><mo>,</mo><mi>k</mi></mrow></msub><mo>&gt;</mo><mi>δ</mi><mo>∣</mo><mi>y</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">P(\beta_{r,k} &gt; \delta \mid y)</annotation></semantics></math>
-→ if
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\ge</annotation></semantics></math><code>prob_cutoff</code>, classify as
-<strong>hypermethylated</strong>
-</li>
+<strong>hypermethylated</strong> if
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mo>&gt;</mo><mi>δ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≥</mo></mrow><annotation encoding="application/x-tex">P(\beta &gt; \delta) \ge</annotation></semantics></math><code>prob_cutoff</code>,</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>β</mi><mrow><mi>r</mi><mo>,</mo><mi>k</mi></mrow></msub><mo>&lt;</mo><mo>−</mo><mi>δ</mi><mo>∣</mo><mi>y</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">P(\beta_{r,k} &lt; -\delta \mid y)</annotation></semantics></math>
-→ if
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\ge</annotation></semantics></math><code>prob_cutoff</code>, classify as
-<strong>hypomethylated</strong>
-</li>
-<li>otherwise <strong>inconclusive</strong>.</li>
+<strong>hypomethylated</strong> if
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mo>&lt;</mo><mo>−</mo><mi>δ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≥</mo></mrow><annotation encoding="application/x-tex">P(\beta &lt; -\delta) \ge</annotation></semantics></math><code>prob_cutoff</code>,</li>
+<li>
+<strong>inconclusive</strong> otherwise.</li>
 </ul>
-<p>You can customize the prior with <code><a href="../reference/bread_prior.html">bread_prior()</a></code>:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># A slightly tighter prior on coefficients</span></span>
-<span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bread_prior.html">bread_prior</a></span><span class="op">(</span>lambda0 <span class="op">=</span> <span class="fl">0.1</span>, a0 <span class="op">=</span> <span class="fl">1</span>, b0 <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">fit2</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_bread.html">fit_bread</a></span><span class="op">(</span><span class="va">se</span>, <span class="va">regions</span>, <span class="op">~</span> <span class="va">group</span>, <span class="st">"groupold"</span>, prior <span class="op">=</span> <span class="va">prior</span>,</span>
-<span>                   feature_class_col <span class="op">=</span> <span class="st">"feature_class"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/classifications.html">classifications</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         PRC_early        CGI_island         LAD_chr1q           PRC_mid </span></span>
-<span><span class="co">#&gt; "hypermethylated"    "inconclusive"  "hypomethylated"    "inconclusive" </span></span>
-<span><span class="co">#&gt;        LAD_distal </span></span>
-<span><span class="co">#&gt;    "inconclusive"</span></span></code></pre></div>
+<p>Need partial pooling across regions, non-conjugate priors, or ordered
+contrasts? Set <code>backend = "brms"</code>; everything else stays the
+same.</p>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.5.3 (2026-03-11)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -390,27 +406,40 @@ and MCMC-backed priors are planned for the hierarchical mode in v2.</p>
 <span><span class="co">#&gt;  [3] SummarizedExperiment_1.40.0 Biobase_2.70.0             </span></span>
 <span><span class="co">#&gt;  [5] GenomicRanges_1.62.1        Seqinfo_1.0.0              </span></span>
 <span><span class="co">#&gt;  [7] IRanges_2.44.0              S4Vectors_0.48.1           </span></span>
-<span><span class="co">#&gt;  [9] BiocGenerics_0.56.0         generics_0.1.4             </span></span>
-<span><span class="co">#&gt; [11] MatrixGenerics_1.22.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [13] BREAD_0.0.0.9000           </span></span>
+<span><span class="co">#&gt;  [9] MatrixGenerics_1.22.0       matrixStats_1.5.0          </span></span>
+<span><span class="co">#&gt; [11] knowYourCG_1.6.3            sesameData_1.28.0          </span></span>
+<span><span class="co">#&gt; [13] ExperimentHub_3.0.0         AnnotationHub_4.0.0        </span></span>
+<span><span class="co">#&gt; [15] BiocFileCache_3.0.0         dbplyr_2.5.2               </span></span>
+<span><span class="co">#&gt; [17] BiocGenerics_0.56.0         generics_0.1.4             </span></span>
+<span><span class="co">#&gt; [19] BREAD_0.0.0.9000           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] sass_0.4.10         SparseArray_1.10.10 lattice_0.22-9     </span></span>
-<span><span class="co">#&gt;  [4] digest_0.6.39       magrittr_2.0.5      evaluate_1.0.5     </span></span>
-<span><span class="co">#&gt;  [7] grid_4.5.3          RColorBrewer_1.1-3  fastmap_1.2.0      </span></span>
-<span><span class="co">#&gt; [10] jsonlite_2.0.0      Matrix_1.7-4        scales_1.4.0       </span></span>
-<span><span class="co">#&gt; [13] textshaping_1.0.5   jquerylib_0.1.4     abind_1.4-8        </span></span>
-<span><span class="co">#&gt; [16] cli_3.6.6           rlang_1.2.0         XVector_0.50.0     </span></span>
-<span><span class="co">#&gt; [19] withr_3.0.2         cachem_1.1.0        DelayedArray_0.36.1</span></span>
-<span><span class="co">#&gt; [22] yaml_2.3.12         S4Arrays_1.10.1     tools_4.5.3        </span></span>
-<span><span class="co">#&gt; [25] dplyr_1.2.1         vctrs_0.7.3         R6_2.6.1           </span></span>
-<span><span class="co">#&gt; [28] lifecycle_1.0.5     fs_2.1.0            ragg_1.5.2         </span></span>
-<span><span class="co">#&gt; [31] pkgconfig_2.0.3     desc_1.4.3          pkgdown_2.2.0      </span></span>
-<span><span class="co">#&gt; [34] bslib_0.10.0        pillar_1.11.1       gtable_0.3.6       </span></span>
-<span><span class="co">#&gt; [37] glue_1.8.1          systemfonts_1.3.2   tidyselect_1.2.1   </span></span>
-<span><span class="co">#&gt; [40] tibble_3.3.1        xfun_0.57           knitr_1.51         </span></span>
-<span><span class="co">#&gt; [43] farver_2.1.2        htmltools_0.5.9     labeling_0.4.3     </span></span>
-<span><span class="co">#&gt; [46] rmarkdown_2.31      compiler_4.5.3      S7_0.2.1-1</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] tidyselect_1.2.1     dplyr_1.2.1          farver_2.1.2        </span></span>
+<span><span class="co">#&gt;  [4] blob_1.3.0           filelock_1.0.3       Biostrings_2.78.0   </span></span>
+<span><span class="co">#&gt;  [7] S7_0.2.1-1           fastmap_1.2.0        digest_0.6.39       </span></span>
+<span><span class="co">#&gt; [10] lifecycle_1.0.5      KEGGREST_1.50.0      RSQLite_2.4.6       </span></span>
+<span><span class="co">#&gt; [13] magrittr_2.0.5       compiler_4.5.3       rlang_1.2.0         </span></span>
+<span><span class="co">#&gt; [16] sass_0.4.10          tools_4.5.3          yaml_2.3.12         </span></span>
+<span><span class="co">#&gt; [19] knitr_1.51           labeling_0.4.3       S4Arrays_1.10.1     </span></span>
+<span><span class="co">#&gt; [22] bit_4.6.0            curl_7.0.0           DelayedArray_0.36.1 </span></span>
+<span><span class="co">#&gt; [25] plyr_1.8.9           RColorBrewer_1.1-3   abind_1.4-8         </span></span>
+<span><span class="co">#&gt; [28] purrr_1.2.2          withr_3.0.2          desc_1.4.3          </span></span>
+<span><span class="co">#&gt; [31] grid_4.5.3           wheatmap_0.2.0       colorspace_2.1-2    </span></span>
+<span><span class="co">#&gt; [34] scales_1.4.0         cli_3.6.6            rmarkdown_2.31      </span></span>
+<span><span class="co">#&gt; [37] crayon_1.5.3         ragg_1.5.2           httr_1.4.8          </span></span>
+<span><span class="co">#&gt; [40] reshape2_1.4.5       tzdb_0.5.0           DBI_1.3.0           </span></span>
+<span><span class="co">#&gt; [43] cachem_1.1.0         stringr_1.6.0        AnnotationDbi_1.72.0</span></span>
+<span><span class="co">#&gt; [46] BiocManager_1.30.27  XVector_0.50.0       vctrs_0.7.3         </span></span>
+<span><span class="co">#&gt; [49] Matrix_1.7-4         jsonlite_2.0.0       hms_1.1.4           </span></span>
+<span><span class="co">#&gt; [52] bit64_4.6.0-1        ggrepel_0.9.8        systemfonts_1.3.2   </span></span>
+<span><span class="co">#&gt; [55] jquerylib_0.1.4      glue_1.8.1           pkgdown_2.2.0       </span></span>
+<span><span class="co">#&gt; [58] stringi_1.8.7        gtable_0.3.6         BiocVersion_3.22.0  </span></span>
+<span><span class="co">#&gt; [61] tibble_3.3.1         pillar_1.11.1        rappdirs_0.3.4      </span></span>
+<span><span class="co">#&gt; [64] htmltools_0.5.9      R6_2.6.1             httr2_1.2.2         </span></span>
+<span><span class="co">#&gt; [67] textshaping_1.0.5    lattice_0.22-9       evaluate_1.0.5      </span></span>
+<span><span class="co">#&gt; [70] readr_2.2.0          png_0.1-9            memoise_2.0.1       </span></span>
+<span><span class="co">#&gt; [73] bslib_0.10.0         Rcpp_1.1.1-1         SparseArray_1.10.10 </span></span>
+<span><span class="co">#&gt; [76] xfun_0.57            fs_2.1.0             pkgconfig_2.0.3</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

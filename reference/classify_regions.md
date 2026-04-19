@@ -1,7 +1,7 @@
 # Classify regions as hyper / hypo / inconclusive
 
 Applies the BREAD decision rule to the output of
-[`brms::posterior_summary()`](https://paulbuerkner.com/brms/reference/posterior_summary.html):
+[`posterior_summary()`](https://baczemin.github.io/BREAD/reference/posterior_summary.md):
 
 - `hypermethylated` if `p_gt_delta >= prob_cutoff`
 
@@ -20,7 +20,7 @@ classify_regions(post, delta = 0.1, prob_cutoff = 0.95)
 - post:
 
   Output of
-  [`brms::posterior_summary()`](https://paulbuerkner.com/brms/reference/posterior_summary.html).
+  [`posterior_summary()`](https://baczemin.github.io/BREAD/reference/posterior_summary.md).
 
 - delta:
 
