@@ -1,0 +1,247 @@
+---
+title: "Intro to BREAD"
+subtitle: "Bayesian region-specific DNA methylation inference"
+author: "Jaemin Park"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Intro to BREAD}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.align = "center",
+  fig.width  = 7,
+  fig.height = 4.5,
+  dpi = 120
+)
+set.seed(2026)
+```
+
+## What BREAD is for
+
+Many methylation studies are not purely discovery-oriented. Instead of asking
+*"which CpGs are significant genome-wide?"*, the question is often:
+
+- Are **PRC2 target regions** hypermethylated in old vs. young samples?
+- Do **bivalent promoters** coherently lose methylation after treatment?
+- Among my **predefined chromatin classes** (LADs, PMDs, CGIs, …), which
+  show strong directional evidence at a biologically meaningful effect size?
+
+Existing tooling is strong for genome-wide hypothesis testing, but answering
+those questions directly benefits from:
+
+1. **region-centric** inference (one answer per region, not per CpG),
+2. **threshold-based** decisions on biologically meaningful effect sizes,
+3. **posterior probabilities** rather than p-values,
+4. *borrowing strength across probes inside a region.*
+
+BREAD provides a minimal, interpretable Bayesian workflow for exactly these
+targeted questions, built around `SummarizedExperiment` and `GRanges`.
+
+## Install and load
+
+```{r load, message = FALSE}
+library(BREAD)
+library(SummarizedExperiment)
+library(GenomicRanges)
+library(ggplot2)
+library(patchwork)
+```
+
+## Build a toy young-vs-old methylation experiment
+
+We simulate 60 CpG probes on chromosome 1 spaced every 1 kb, across
+16 samples (8 young, 8 old). We define five regions of interest — a mix of
+PRC-like, CGI-like, and LAD-like feature classes — and inject a strong hyper
+or hypo signal into a few of them so we can see BREAD recover them.
+
+```{r toy-data}
+n_probes  <- 60L
+n_samples <- 16L
+
+# Probe-level GRanges (rowRanges of the SE)
+probes <- GRanges(
+  seqnames = "chr1",
+  ranges   = IRanges(start = seq(1L, by = 1000L, length.out = n_probes),
+                     width = 1L)
+)
+names(probes) <- sprintf("cg%04d", seq_len(n_probes))
+
+# Sample metadata
+coldata <- S4Vectors::DataFrame(
+  group = factor(rep(c("young", "old"), each = n_samples / 2),
+                 levels = c("young", "old")),
+  sex   = factor(rep(c("F", "M"), length.out = n_samples)),
+  row.names = sprintf("S%02d", seq_len(n_samples))
+)
+
+# Baseline M-values: noise centered at 0
+X <- matrix(
+  rnorm(n_probes * n_samples, mean = 0, sd = 0.3),
+  nrow = n_probes,
+  dimnames = list(names(probes), rownames(coldata))
+)
+
+# Regions we care about (biologically predefined sets)
+regions <- GRanges(
+  seqnames = "chr1",
+  ranges   = IRanges(
+    start = c(    1L, 10001L, 20001L, 30001L, 45001L),
+    end   = c(10000L, 19000L, 28000L, 40000L, 55000L)
+  ),
+  feature_class = c("PRC", "CGI", "LAD", "PRC", "LAD")
+)
+names(regions) <- c("PRC_early", "CGI_island", "LAD_chr1q",
+                    "PRC_mid",   "LAD_distal")
+
+# Inject signal: in "old" samples, PRC_early gains ~1 M-value, LAD_chr1q loses ~1.
+# CGI_island, PRC_mid, LAD_distal are left at baseline (should come out inconclusive).
+old_mask <- coldata$group == "old"
+probe_in <- function(gr) which(IRanges::overlapsAny(probes, gr))
+X[probe_in(regions["PRC_early"]), old_mask] <-
+  X[probe_in(regions["PRC_early"]), old_mask] + 1.0
+X[probe_in(regions["LAD_chr1q"]), old_mask] <-
+  X[probe_in(regions["LAD_chr1q"]), old_mask] - 1.0
+
+se <- SummarizedExperiment(
+  assays    = list(M = X),
+  rowRanges = probes,
+  colData   = coldata
+)
+se
+```
+
+## Fit BREAD
+
+One call maps probes to regions, summarizes them per sample, fits a Bayesian
+region-level model, and classifies each region as *hyper*, *hypo*, or
+*inconclusive*.
+
+```{r fit}
+fit <- fit_bread(
+  se,
+  features    = regions,
+  design      = ~ group + sex,
+  contrast    = "groupold",
+  assay_name  = "M",
+  input_scale = "M",
+  delta       = 0.10,
+  prob_cutoff = 0.95,
+  min_probes  = 3L,
+  summary_fun = "mean",
+  feature_class_col = "feature_class"
+)
+fit
+```
+
+The `<BreadFit>` printout summarizes the pipeline: mode, backend, contrast,
+thresholds, how many of the supplied regions survived `min_probes`, and the
+distribution of classifications.
+
+## Inspect the region-level results
+
+```{r results}
+res <- results(fit)
+res[, c("region_id", "mean_effect", "ci_lo", "ci_hi",
+        "p_gt_delta", "p_lt_neg_delta", "classification")]
+```
+
+For a quick vector mapping region → call:
+
+```{r classifications}
+classifications(fit)
+```
+
+## Visualize
+
+BREAD ships three plot helpers — all returning `ggplot` objects, all themed
+with the embedded MetBrewer *Cross* palette via `bread_colors()`.
+
+### 1. Posterior of the contrast coefficient
+
+The analytical posterior of each region's `groupold` effect is a
+location-scale Student-t. BREAD plots it with dashed guides at ±δ.
+
+```{r plot-posterior, fig.height = 4}
+plot_region_posterior(fit)
+```
+
+### 2. Raw region-level values by group
+
+Region-level summaries plotted against the first design variable.
+
+```{r plot-data, fig.width = 9, fig.height = 4}
+p_hyper <- plot_region_data(fit, "PRC_early")
+p_hypo  <- plot_region_data(fit, "LAD_chr1q")
+p_hyper | p_hypo
+```
+
+### 3. Classification summary by feature class
+
+```{r plot-feature-set, fig.height = 3.5}
+plot_feature_set(fit, feature_class_col = "feature_class")
+```
+
+### Posterior samples
+
+When you need draws (for custom plots, downstream uncertainty propagation,
+or reporting), `posterior_draws()` samples from the analytical scaled-t:
+
+```{r draws}
+d <- posterior_draws(fit, region_id = "PRC_early", n = 2000L, seed = 1L)
+head(d, 4)
+quantile(d$value, c(0.025, 0.5, 0.975))
+```
+
+## What the model is doing (under the hood)
+
+For each region *r*, BREAD (v1) fits a conjugate
+Normal–Inverse-Gamma regression on the summarized region values:
+
+\[
+y_{ir} \sim \mathcal{N}\bigl(X_i \beta_r,\ \sigma_r^2\bigr),\quad
+\beta_r \mid \sigma_r^2 \sim \mathcal{N}(\mu_0,\ \sigma_r^2 \Lambda_0^{-1}),\quad
+\sigma_r^2 \sim \text{Inv-Gamma}(a_0, b_0).
+\]
+
+The posterior has a closed form. After the update, the **marginal** posterior
+of any single coefficient is a location-scale Student-*t*:
+
+\[
+\beta_{r,k} \mid y \sim t_{2 a_n}\!\left(\mu_{n,k},\ \tfrac{b_n}{a_n} [\Lambda_n^{-1}]_{kk}\right),
+\]
+
+which is what BREAD uses to compute posterior probabilities directly via
+`pt()` / `qt()` — no MCMC. This keeps v1 fast, deterministic, and trivially
+installable. Partial pooling across regions and MCMC-backed priors are
+planned for the hierarchical mode in v2.
+
+Posterior probabilities that drive classification:
+
+- \(P(\beta_{r,k} > \delta \mid y)\) → if \(\ge\) `prob_cutoff`, classify as **hypermethylated**
+- \(P(\beta_{r,k} < -\delta \mid y)\) → if \(\ge\) `prob_cutoff`, classify as **hypomethylated**
+- otherwise **inconclusive**.
+
+You can customize the prior with `bread_prior()`:
+
+```{r priors}
+# A slightly tighter prior on coefficients
+prior <- bread_prior(lambda0 = 0.1, a0 = 1, b0 = 1)
+fit2  <- fit_bread(se, regions, ~ group, "groupold", prior = prior,
+                   feature_class_col = "feature_class")
+classifications(fit2)
+```
+
+## Session info
+
+```{r session}
+sessionInfo()
+```
