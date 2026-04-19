@@ -8,23 +8,46 @@ summarize_features(
   se,
   mapping,
   summary_fun = c("mean", "median", "weighted_mean", "pc1"),
-  input_scale = c("M", "Beta")
+  input_scale = c("M", "Beta"),
+  assay_name = "M"
 )
 }
 \arguments{
 \item{se}{A \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment}.}
 
-\item{mapping}{Output of \code{\link[=map_probes_to_features]{map_probes_to_features()}}.}
+\item{mapping}{Data frame from \code{\link[=map_probes_to_features]{map_probes_to_features()}}.}
 
-\item{summary_fun}{Summary function name.}
+\item{summary_fun}{One of \code{"mean"}, \code{"median"}, \code{"weighted_mean"}, \code{"pc1"}.}
 
-\item{input_scale}{\code{"M"} or \code{"Beta"}; beta values are converted to M internally.}
+\item{input_scale}{\code{"M"} or \code{"Beta"}. \code{"Beta"} inputs are converted to
+M-values before summarization.}
+
+\item{assay_name}{Assay name in \code{se}. Default \code{"M"}.}
 }
 \value{
-A numeric matrix of regions (rows) by samples (columns).
+A numeric matrix with one row per region (in the order they first
+appear in \code{mapping}) and one column per sample (matching
+\code{colnames(assay(se, assay_name))}). Attributes: \code{summary_fun},
+\code{input_scale}, \code{assay_name}.
 }
 \description{
-Aggregates probe-level methylation per region per sample. Supports
-\code{"mean"} (default), \code{"median"}, \code{"weighted_mean"}, and \code{"pc1"}.
+Collapses probe × sample methylation values into a region × sample matrix,
+one row per region in the mapping. BREAD models this matrix directly.
 }
+\section{Summary functions}{
+
+\itemize{
+\item \code{"mean"} (default): arithmetic mean of probes per region per sample.
+\item \code{"median"}: per-sample median across probes in the region.
+\item \code{"weighted_mean"}: inverse-variance weighting, where each probe's weight
+is \code{1 / max(var_across_samples, 1e-6)}. Probes with zero variance receive
+the minimum-variance weight; if all probes have zero variance, weights
+fall back to uniform (reducing to the plain mean).
+\item \code{"pc1"}: first principal component of the probes (SVD after row-centering).
+Returned scores are sign-aligned so they correlate positively with the
+per-sample mean across probes. Scale is abstract — \code{delta} loses its
+M-value interpretation under \code{"pc1"}.
+}
+}
+
 \keyword{internal}
