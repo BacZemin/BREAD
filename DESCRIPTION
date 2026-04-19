@@ -38,6 +38,6 @@ Imports:
     stats,
     SummarizedExperiment
 biocViews: DNAMethylation, Bayesian, Epigenetics, DifferentialMethylation, MethylationArray
-URL: https://github.com/BacZemin/BREAD
+URL: https://github.com/BacZemin/BREAD, https://baczemin.github.io/BREAD
 BugReports: https://github.com/BacZemin/BREAD/issues
 VignetteBuilder: knitr

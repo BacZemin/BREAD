@@ -61,6 +61,12 @@ reference:
   - plot_region_data
   - plot_feature_set
   - bread_colors
+- title: "Enrichment"
+  desc: >
+    Post-hoc annotation of a BreadFit's hyper / hypo regions against KnowYourCG
+    reference databases (TFBS, chromHMM, CGI, tissue signatures, ...).
+  contents:
+  - bread_kycg
 - title: "Classes and methods"
   contents:
   - BreadFit
