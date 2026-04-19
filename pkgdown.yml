@@ -1,0 +1,10 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  bread-intro: bread-intro.html
+  bread-vitc: bread-vitc.html
+last_built: 2026-04-19T16:26Z
+urls:
+  reference: https://baczemin.github.io/BREAD/reference
+  article: https://baczemin.github.io/BREAD/articles
