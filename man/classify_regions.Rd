@@ -7,22 +7,29 @@
 classify_regions(post, delta = 0.1, prob_cutoff = 0.95)
 }
 \arguments{
-\item{post}{A data frame of posterior summaries per region (output of
-\code{\link[=posterior_summary]{posterior_summary()}}).}
+\item{post}{Output of \code{\link[=posterior_summary]{posterior_summary()}}.}
 
-\item{delta}{Effect-size threshold. Default 0.10.}
+\item{delta}{Effect-size threshold used for the rule. Default \code{0.10}. Stored
+as an attribute; does not re-evaluate the posterior probabilities (those
+must have been computed at this same \code{delta} upstream).}
 
-\item{prob_cutoff}{Posterior probability cutoff. Default 0.95.}
+\item{prob_cutoff}{Posterior probability cutoff. Default \code{0.95}.}
 }
 \value{
-The input data frame with an added \code{classification} column.
+The input \code{data.frame} with an added \code{classification} factor column
+(levels: \code{hypermethylated}, \code{hypomethylated}, \code{inconclusive}). Attributes
+\code{delta} and \code{prob_cutoff} are updated.
 }
 \description{
-Applies the BREAD decision rule per region:
+Applies the BREAD decision rule to the output of \code{\link[=posterior_summary]{posterior_summary()}}:
 \itemize{
-\item hypermethylated if \code{P(beta > delta) >= prob_cutoff}
-\item hypomethylated  if \code{P(beta < -delta) >= prob_cutoff}
-\item inconclusive    otherwise
+\item \code{hypermethylated} if \code{p_gt_delta >= prob_cutoff}
+\item \code{hypomethylated}  if \code{p_lt_neg_delta >= prob_cutoff}
+\item \code{inconclusive}    otherwise
 }
 }
-\keyword{internal}
+\details{
+In the rare case that both probabilities exceed the cutoff (only possible
+for very low \code{prob_cutoff}), the region is assigned to whichever side has
+the larger posterior probability.
+}

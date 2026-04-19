@@ -37,4 +37,3 @@ coordinates, that \code{features} is a non-empty \link[GenomicRanges:GRanges-cla
 that \code{assay_name} is present, and that \code{contrast} (when non-NULL) resolves
 to a coefficient of the design's model matrix.
 }
-\keyword{internal}

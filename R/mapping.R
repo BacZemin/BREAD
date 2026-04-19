@@ -27,7 +27,7 @@
 #' @importFrom SummarizedExperiment rowRanges
 #' @importFrom GenomicRanges findOverlaps
 #' @importFrom S4Vectors queryHits subjectHits mcols
-#' @keywords internal
+#' @export
 map_probes_to_features <- function(se, features, min_probes = 3L) {
   if (!methods::is(se, "SummarizedExperiment")) {
     stop("`se` must be a SummarizedExperiment.", call. = FALSE)

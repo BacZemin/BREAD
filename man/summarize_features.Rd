@@ -50,4 +50,3 @@ M-value interpretation under \code{"pc1"}.
 }
 }
 
-\keyword{internal}

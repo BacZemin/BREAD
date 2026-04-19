@@ -19,7 +19,7 @@
 #' @importFrom methods is
 #' @importFrom SummarizedExperiment assayNames colData rowRanges
 #' @importFrom stats model.matrix
-#' @keywords internal
+#' @export
 validate_bread_input <- function(se,
                                  features,
                                  design,

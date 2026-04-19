@@ -2,23 +2,33 @@
 % Please edit documentation in R/posterior.R
 \name{posterior_summary}
 \alias{posterior_summary}
-\title{Extract posterior summaries per region}
+\title{Extract per-region posterior summaries}
 \usage{
 posterior_summary(fit, delta = 0.1, ci = 0.95)
 }
 \arguments{
-\item{fit}{Internal per-region fit object (list of \code{brms} fits).}
+\item{fit}{Output of \code{\link[=fit_bread_summary]{fit_bread_summary()}}.}
 
-\item{delta}{Effect-size threshold on the M-value scale.}
+\item{delta}{Effect-size threshold on the M-value scale. Default \code{0.10}.}
 
-\item{ci}{Credible-interval width. Default 0.95.}
+\item{ci}{Credible-interval mass. Default \code{0.95}.}
 }
 \value{
-A data frame, one row per region.
+A \code{data.frame} with one row per region and columns:
+\code{region_id}, \code{n}, \code{mean_effect}, \code{median_effect}, \code{ci_lo}, \code{ci_hi},
+\code{df}, \code{scale}, \code{p_pos}, \code{p_neg}, \code{p_gt_delta}, \code{p_lt_neg_delta}, \code{error}.
+Attributes: \code{delta}, \code{ci}, \code{contrast}.
 }
 \description{
-From posterior draws of each region's effect \code{beta_r}, computes mean,
-median, credible interval, and posterior probabilities of positive and
-negative effect (both signed and threshold-based on \code{delta}).
+Given the output of \code{\link[=fit_bread_summary]{fit_bread_summary()}}, compute the marginal posterior
+location/scale/df of the contrast coefficient for each region, along with
+directional and threshold probabilities used by \code{\link[=classify_regions]{classify_regions()}}.
 }
-\keyword{internal}
+\section{Math}{
+
+Under the Normal-Inverse-Gamma conjugate update, the marginal posterior of
+the contrast coefficient is a location-scale Student-t:
+\deqn{\beta_{r,k} \mid y \sim t_{2 a_n}\!\left(\mu_{n,k},\ \tfrac{b_n}{a_n} [\Lambda_n^{-1}]_{kk}\right).}
+Posterior probabilities are computed as \code{P(beta > c) = 1 - pt((c - mu)/s, df)}.
+}
+

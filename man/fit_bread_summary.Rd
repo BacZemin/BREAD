@@ -4,42 +4,45 @@
 \alias{fit_bread_summary}
 \title{Fit BREAD summary-mode Bayesian model}
 \usage{
-fit_bread_summary(
-  region_mat,
-  coldata,
-  design,
-  contrast,
-  delta = 0.1,
-  prob_cutoff = 0.95,
-  iter = 2000L,
-  chains = 4L,
-  cores = 4L,
-  seed = 1L,
-  backend = c("brms", "cmdstanr")
-)
+fit_bread_summary(region_mat, coldata, design, contrast, prior = NULL)
 }
 \arguments{
-\item{region_mat}{Region-by-sample numeric matrix.}
+\item{region_mat}{Region-by-sample numeric matrix (from \code{\link[=summarize_features]{summarize_features()}}).}
 
-\item{coldata}{Sample metadata (\link[S4Vectors:DataFrame-class]{S4Vectors::DataFrame} or data frame).}
+\item{coldata}{Sample metadata (\link[S4Vectors:DataFrame-class]{S4Vectors::DataFrame} or \code{data.frame}).}
 
-\item{design}{One-sided formula defining the model.}
+\item{design}{One-sided formula.}
 
-\item{contrast}{Character name of the coefficient of interest.}
+\item{contrast}{Character coefficient name of interest.}
 
-\item{delta}{Effect-size threshold on the M-value scale.}
-
-\item{prob_cutoff}{Posterior probability cutoff for classification.}
-
-\item{iter, chains, cores, seed}{MCMC settings.}
-
-\item{backend}{\code{"brms"} or \code{"cmdstanr"}.}
+\item{prior}{A \code{\link[=bread_prior]{bread_prior()}} object (or \code{NULL} for defaults).}
 }
 \value{
-A list with per-region fits and posterior summaries.
+A list with:
+\itemize{
+\item \code{fits}: per-region list of \code{list(mu_n, Lambda_n_inv, a_n, b_n, n, error)}
+\item \code{design_matrix}: model matrix \code{X} actually used
+\item \code{coef_names}: coefficient names
+\item \code{contrast}, \code{contrast_idx}: contrast name and its column index in \code{X}
+\item \code{region_ids}: rownames of \code{region_mat}
+\item \code{prior}: the prior applied (with \code{mu0}/\code{Lambda0} filled in)
+}
 }
 \description{
-v1 MVP. Fits one region-level Normal regression per region via \code{brms},
-with the design's main contrast as the fixed effect of interest.
+v1 MVP fit. For each region, fits a Normal linear regression
+\code{y ~ design} with a conjugate Normal-Inverse-Gamma prior, yielding an
+analytical posterior — no MCMC. The marginal posterior of each coefficient
+is a location-scale Student-t, used downstream by \code{\link[=posterior_summary]{posterior_summary()}}.
 }
+\section{Model}{
+
+For region r and sample i:
+\deqn{y_{ir} \sim \mathcal{N}(X_i \beta_r,\, \sigma_r^2),}
+\deqn{\beta_r \mid \sigma_r^2 \sim \mathcal{N}(\mu_0,\, \sigma_r^2 \Lambda_0^{-1}),}
+\deqn{\sigma_r^2 \sim \mathrm{Inv\text{-}Gamma}(a_0, b_0).}
+Posterior:
+\deqn{\Lambda_n = X^\top X + \Lambda_0,\quad \mu_n = \Lambda_n^{-1}(X^\top y + \Lambda_0 \mu_0),}
+\deqn{a_n = a_0 + n/2,\quad b_n = b_0 + \tfrac{1}{2}(y^\top y + \mu_0^\top \Lambda_0 \mu_0 - \mu_n^\top \Lambda_n \mu_n).}
+}
+
 \keyword{internal}

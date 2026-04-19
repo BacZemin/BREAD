@@ -30,7 +30,7 @@
 #' @importFrom methods is
 #' @importFrom SummarizedExperiment assay assayNames
 #' @importFrom stats median var cor
-#' @keywords internal
+#' @export
 summarize_features <- function(se,
                                mapping,
                                summary_fun = c("mean", "median", "weighted_mean", "pc1"),

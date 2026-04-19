@@ -37,4 +37,3 @@ format). Probes with no region are silently excluded from the returned
 mapping. Regions excluded by \code{min_probes} (including those with zero
 overlaps) are recorded on \code{attr(mapping, "dropped_regions")}.
 }
-\keyword{internal}
