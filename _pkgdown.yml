@@ -1,0 +1,82 @@
+url: https://baczemin.github.io/BREAD
+
+title: BREAD
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#004f63"    # MetBrewer Cross navy teal (matches palette)
+    border-radius: 0.25rem
+    btn-border-radius: 0.25rem
+
+home:
+  title: "BREAD: Bayesian region-specific DNA methylation inference"
+  description: >
+    BREAD provides targeted Bayesian inference for predefined methylation
+    regions using array-derived data stored in SummarizedExperiment objects.
+    Instead of only returning p-values, BREAD estimates posterior
+    probabilities that each region is hypermethylated or hypomethylated
+    under a contrast of interest.
+
+authors:
+  Jaemin Park:
+    href: https://github.com/BacZemin
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/bread-intro.html
+    articles:
+      text: Articles
+      menu:
+      - text: "Intro to BREAD (toy data)"
+        href: articles/bread-intro.html
+      - text: "Real-data walkthrough: vitamin C EPICv2 experiment"
+        href: articles/bread-vitc.html
+
+reference:
+- title: "Fit a BREAD model"
+  desc: >
+    The main entry point and the two backend fit helpers. Most users only
+    call `fit_bread()`; backend-specific functions are exposed for power users.
+  contents:
+  - fit_bread
+  - bread_prior
+- title: "Pipeline building blocks"
+  desc: >
+    Exposed helpers for each stage of the pipeline — useful when you want
+    to inspect intermediate output or plug BREAD into a larger workflow.
+  contents:
+  - validate_bread_input
+  - map_probes_to_features
+  - summarize_features
+  - posterior_summary
+  - classify_regions
+- title: "Plotting and palette"
+  contents:
+  - plot_region_posterior
+  - plot_region_data
+  - plot_feature_set
+  - bread_colors
+- title: "Classes and methods"
+  contents:
+  - BreadFit
+  - BreadResults
+  - results
+  - classifications
+  - posterior_draws
+
+articles:
+- title: All articles
+  navbar: ~
+  contents:
+  - bread-intro
+  - bread-vitc
+
+news:
+  releases:
+  - text: "Development (0.0.0.9000)"
+    href: news/index.html

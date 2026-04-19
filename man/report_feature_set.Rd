@@ -18,3 +18,4 @@ A data frame with one row per feature class.
 Aggregates region-level classifications into a feature-set / feature-class
 summary (counts and proportions of hyper / hypo / inconclusive).
 }
+\keyword{internal}

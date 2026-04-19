@@ -4,3 +4,6 @@
 ^docs$
 ^.*\.bak\..*$
 ^\.github$
+^_pkgdown\.yml$
+^pkgdown$
+^tools$
