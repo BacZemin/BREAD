@@ -1,0 +1,243 @@
+---
+title: "BREAD on real EPICv2 data: vitamin C in serially passaged fibroblasts"
+author: "Jaemin Park"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{BREAD on real EPICv2 data: vitamin C in serially passaged fibroblasts}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>",
+  fig.align = "center", fig.width = 7, fig.height = 4.5, dpi = 120
+)
+set.seed(2026)
+```
+
+## Biological question
+
+Ascorbic acid (vitamin C) is a cofactor for TET dioxygenases, which oxidize
+5mC → 5hmC → 5fC → 5caC and drive active DNA demethylation. TET activity is
+thought to protect CpG islands from aberrant age-associated hypermethylation.
+In serially passaged human fibroblasts, two CpG sets consistently change:
+
+- **PRC-CGI** (Polycomb-marked CpG islands, H3K27me3 ∩ CGI) **gain**
+  methylation with passage number;
+- **PMD-soloWCGW** (late-replicating solo-WCGW CpGs within partially
+  methylated domains) **lose** methylation with passage number.
+
+The question the experiment asks: *does VitC supplementation attenuate
+either signal?* A conventional probe-level DMP pipeline reports significant
+CpGs; BREAD asks the complementary, region-centric question directly:
+
+> For each predefined feature region, what is the posterior probability
+> that the methylation effect exceeds a biologically meaningful threshold?
+
+## The packaged data
+
+BREAD ships a small (~0.5 MB) subset of a real EPICv2 experiment from our
+lab — 8 arrays on AG06561 fetal skin fibroblasts across a 2 × 2 design
+(condition × passage × 2 technical replicates). The data-raw builder is
+`data-raw/make_vitc_extdata.R` (in the source repository).
+
+```{r load-data, message = FALSE}
+library(BREAD)
+library(SummarizedExperiment)
+library(GenomicRanges)
+library(ggplot2)
+library(patchwork)
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se
+```
+
+```{r colData}
+as.data.frame(colData(se)[, c("condition", "passage", "replicate")])
+```
+
+```{r regions}
+length(reg); table(reg$feature_class)
+```
+
+Five feature classes, 100 regions each, all on autosomes, each region
+spanning ≥ 3 EPICv2 probes after a ±2 kb merge. `reg$feature_class` will
+drive the `plot_feature_set()` stratification below.
+
+## Aging contrast in ctrl samples
+
+Under the `ctrl` condition (no VitC), BREAD should recover the well-known
+aging signatures: PRC-CGI hypermethylation and PMD-soloWCGW
+hypomethylation.
+
+```{r fit-aging}
+se_ctrl <- se[, colData(se)$condition == "ctrl"]
+fit_aging <- fit_bread(
+  se            = se_ctrl,
+  features      = reg,
+  design        = ~ passage,
+  contrast      = "passagelate",
+  assay_name    = "betas",
+  input_scale   = "Beta",
+  delta         = 0.10,
+  prob_cutoff   = 0.95,
+  min_probes    = 3L,
+  summary_fun   = "mean",
+  feature_class_col = "feature_class"
+)
+fit_aging
+```
+
+### Classifications by class
+
+```{r aging-by-class}
+mp       <- unique(fit_aging@mapping[, c("region_id", "feature_class")])
+res_a    <- merge(results(fit_aging)[, c("region_id", "classification")],
+                  mp, by = "region_id")
+table(res_a$feature_class, res_a$classification)
+```
+
+As expected:
+- **PRC-CGI and Bivalent** regions skew strongly toward `hypermethylated`
+  with passage.
+- **PMD-soloWCGW** regions skew strongly toward `hypomethylated`.
+- **Active promoters** and **active enhancers** are largely `inconclusive`
+  with this sample size (n = 2 per passage), consistent with the weaker
+  direct effect at those regulatory elements.
+
+### Bird's-eye plot
+
+```{r aging-feature-set, fig.height = 3.5}
+plot_feature_set(fit_aging, feature_class_col = "feature_class") +
+  ggtitle("Aging (late vs early), ctrl samples")
+```
+
+## VitC contrast at late passage
+
+Now condition on late passage and test whether ascorbic acid
+supplementation demethylates any regions.
+
+```{r fit-vitc}
+se_late <- se[, colData(se)$passage == "late"]
+fit_vitc <- fit_bread(
+  se            = se_late,
+  features      = reg,
+  design        = ~ condition,
+  contrast      = "conditionaa57",
+  assay_name    = "betas",
+  input_scale   = "Beta",
+  delta         = 0.10,
+  prob_cutoff   = 0.95,
+  min_probes    = 3L,
+  feature_class_col = "feature_class"
+)
+fit_vitc
+```
+
+```{r vitc-by-class}
+res_v <- merge(results(fit_vitc)[, c("region_id", "classification")],
+               mp, by = "region_id")
+table(res_v$feature_class, res_v$classification)
+```
+
+```{r vitc-feature-set, fig.height = 3.5}
+plot_feature_set(fit_vitc, feature_class_col = "feature_class") +
+  ggtitle("VitC (aa57 vs ctrl), late passage")
+```
+
+VitC demethylation is broadly distributed but, with only two replicates per
+arm, most regions land in the `inconclusive` class at `prob_cutoff = 0.95`.
+This is BREAD doing its job — it does not claim more certainty than the
+sample size supports.
+
+## The biologically interesting intersection
+
+The most interpretable cross-tab is *aging × VitC*: which regions that
+hypermethylate with aging are demethylated by vitamin C?
+
+```{r cross-tab}
+a <- classifications(fit_aging)
+v <- classifications(fit_vitc)
+common <- intersect(names(a), names(v))
+xt <- table(aging = a[common], vitc = v[common])
+xt
+```
+
+The **aging-hyper ∩ VitC-hypo** cell contains the candidate
+*VitC-responsive aging hypermethylation* regions — the mechanistic story the
+project is chasing.
+
+```{r vitc-protected}
+protected <- names(a)[a == "hypermethylated" & v == "hypomethylated"]
+length(protected)
+# Feature-class composition of the protected set
+table(mp$feature_class[mp$region_id %in% protected])
+```
+
+The protected set is enriched in **PRC-CGI / Bivalent** regions — consistent
+with vitamin C's known role as a CpG-island guardian via TET recruitment.
+
+## Zooming in on one region
+
+```{r protected-first, fig.height = 3.8}
+if (length(protected) > 0L) {
+  rid <- protected[1]
+  rid
+  plot_region_posterior(fit_aging, region_id = rid) +
+    ggtitle(sprintf("Aging posterior for %s", rid))
+}
+```
+
+```{r protected-data, fig.width = 9, fig.height = 4}
+if (length(protected) > 0L) {
+  rid <- protected[1]
+  p_aging <- plot_region_data(fit_aging, rid) +
+    ggtitle("Aging: late vs early (ctrl)")
+  p_vitc  <- plot_region_data(fit_vitc,  rid) +
+    ggtitle("VitC: aa57 vs ctrl (late)")
+  p_aging + p_vitc
+}
+```
+
+```{r draws, fig.height = 3.5}
+if (length(protected) > 0L) {
+  rid <- protected[1]
+  d <- posterior_draws(fit_vitc, region_id = rid, n = 2000L, seed = 1L)
+  ggplot(d, aes(x = value)) +
+    geom_histogram(fill = bread_colors("classification")[["hypomethylated"]],
+                   bins = 40, alpha = 0.85) +
+    geom_vline(xintercept = c(-0.10, 0, 0.10),
+               linetype = c("dashed","dotted","dashed"),
+               color = c("gray60","gray40","gray60")) +
+    labs(title = sprintf("VitC posterior for %s", rid),
+         x = "effect (M-value units)", y = "count") +
+    theme_classic(base_size = 12)
+}
+```
+
+## Caveats
+
+- **n = 2 per arm.** The credible intervals are wide and many regions
+  remain `inconclusive`. BREAD's posterior probabilities are the honest
+  answer given the data; lowering `prob_cutoff` to, say, `0.80` will promote
+  more regions to `hyper` / `hypo` but also admit more false positives.
+- Technical replicates, not biological. Real variance in the `aa57`
+  effect across fibroblast lines is not captured by this experiment and
+  would produce additional dispersion if included.
+- Feature-class regions here are constructed from the EPICv2 manifest's
+  probe-level annotations (CGI, PMD, histone marks) by merging nearby
+  annotated probes. Users should consider higher-resolution external
+  references (ENCODE chromHMM, segway, compartment-aware WGBS-derived PMD
+  calls) when the question demands it.
+
+## Session info
+
+```{r session}
+sessionInfo()
+```
