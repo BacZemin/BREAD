@@ -121,7 +121,10 @@ fit_bread_summary <- function(region_mat, coldata, design, contrast,
     contrast      = contrast,
     contrast_idx  = contrast_idx,
     region_ids    = rownames(region_mat),
-    prior         = prior
+    prior         = prior,
+    region_mat    = region_mat,
+    design        = design,
+    coldata       = cd_df
   )
 }
 

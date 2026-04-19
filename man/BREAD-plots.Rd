@@ -2,30 +2,11 @@
 % Please edit documentation in R/plots.R
 \name{BREAD-plots}
 \alias{BREAD-plots}
-\alias{plot_region_posterior}
-\alias{plot_region_data}
-\alias{plot_feature_set}
 \title{BREAD plotting helpers}
-\usage{
-plot_region_posterior(fit, region_id)
-
-plot_region_data(fit, region_id)
-
-plot_feature_set(fit, feature_class_col = NULL)
-}
-\arguments{
-\item{fit}{A \link{BreadFit}.}
-
-\item{region_id}{Character region ID.}
-}
 \description{
-\itemize{
-\item \code{plot_region_posterior()} : posterior interval / density per region
-\item \code{plot_region_data()}      : raw region-level values by group
-\item \code{plot_feature_set()}      : feature-set classification summary
-}
-}
-\details{
-All return ggplot objects and avoid any lab-wide theme dependencies.
+Three publication-oriented plot functions for \link{BreadFit} output:
+\code{\link[=plot_region_posterior]{plot_region_posterior()}}, \code{\link[=plot_region_data]{plot_region_data()}}, and \code{\link[=plot_feature_set]{plot_feature_set()}}.
+All return \link[ggplot2:ggplot]{ggplot2::ggplot} objects and use the MetBrewer \code{Cross} palette
+(see \code{\link[=bread_colors]{bread_colors()}}).
 }
 \keyword{internal}
