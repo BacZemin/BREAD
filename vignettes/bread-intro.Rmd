@@ -51,9 +51,6 @@ library(SummarizedExperiment)
 library(GenomicRanges)
 library(ggplot2)
 library(patchwork)
-
-tcga      <- sesameData::sesameDataGet("HM450.76.TCGA.matched")
-probeInfo <- sesameData::sesameDataGet("HM450.probeInfo")
 ```
 
 ```{r cache, include = FALSE}
@@ -61,6 +58,11 @@ sesameData::sesameDataCache(c(
   "HM450.76.TCGA.matched",
   "HM450.probeInfo"
 ))
+```
+
+```{r dataload, message = FALSE}
+tcga      <- sesameData::sesameDataGet("HM450.76.TCGA.matched")
+probeInfo <- sesameData::sesameDataGet("HM450.probeInfo")
 ```
 
 ```{r make-se}
