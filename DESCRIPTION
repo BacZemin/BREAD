@@ -37,6 +37,6 @@ Imports:
     SummarizedExperiment,
     tidyr
 biocViews: DNAMethylation, Bayesian, Epigenetics, DifferentialMethylation, MethylationArray
-URL: https://github.com/jaimebac/BREAD
-BugReports: https://github.com/jaimebac/BREAD/issues
+URL: https://github.com/BacZemin/BREAD
+BugReports: https://github.com/BacZemin/BREAD/issues
 VignetteBuilder: knitr

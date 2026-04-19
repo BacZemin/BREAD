@@ -16,8 +16,8 @@ effect-size and probability thresholds.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/jaimebac/BREAD}
-  \item Report bugs at \url{https://github.com/jaimebac/BREAD/issues}
+  \item \url{https://github.com/BacZemin/BREAD}
+  \item Report bugs at \url{https://github.com/BacZemin/BREAD/issues}
 }
 
 }
