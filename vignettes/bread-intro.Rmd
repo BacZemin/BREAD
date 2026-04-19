@@ -56,7 +56,9 @@ library(patchwork)
 ```{r cache, include = FALSE}
 sesameData::sesameDataCache(c(
   "HM450.76.TCGA.matched",
-  "HM450.probeInfo",
+  "HM450.probeInfo"
+))
+knowYourCG::kycgDataCache(c(
   "KYCG.HM450.chromHMM.20211020",
   "KYCG.HM450.TFBSconsensus.20211013"
 ))
