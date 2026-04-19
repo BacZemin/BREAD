@@ -1,0 +1,42 @@
+Package: BREAD
+Title: Bayesian Region-specific DNA Methylation Inference
+Version: 0.0.0.9000
+Authors@R: 
+    person("Jaemin", "Park", , "jaemin.park@vai.org", role = c("aut", "cre"))
+Description: BREAD provides targeted Bayesian inference for predefined DNA
+    methylation regions using array data stored in SummarizedExperiment
+    objects. For each user-supplied region, BREAD fits a Bayesian model,
+    computes posterior probabilities of directional methylation change,
+    and classifies regions as hypermethylated, hypomethylated, or
+    inconclusive at user-configurable effect-size and probability
+    thresholds.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Language: en-US
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Suggests: 
+    BiocParallel,
+    brms,
+    cmdstanr,
+    knitr,
+    posterior,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    tidybayes
+Config/testthat/edition: 3
+Imports: 
+    dplyr,
+    GenomicRanges,
+    ggplot2,
+    IRanges,
+    methods,
+    rlang,
+    S4Vectors,
+    stats,
+    SummarizedExperiment,
+    tidyr
+biocViews: DNAMethylation, Bayesian, Epigenetics, DifferentialMethylation, MethylationArray
+URL: https://github.com/jaimebac/BREAD
+BugReports: https://github.com/jaimebac/BREAD/issues
+VignetteBuilder: knitr
