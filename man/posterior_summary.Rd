@@ -7,7 +7,7 @@
 posterior_summary(fit, delta = 0.1, ci = 0.95)
 }
 \arguments{
-\item{fit}{Output of \code{\link[=fit_bread_summary]{fit_bread_summary()}}.}
+\item{fit}{Output of \code{\link[=fit_bread_summary]{fit_bread_summary()}} or \code{\link[=fit_bread_brms]{fit_bread_brms()}}.}
 
 \item{delta}{Effect-size threshold on the M-value scale. Default \code{0.10}.}
 
@@ -17,18 +17,25 @@ posterior_summary(fit, delta = 0.1, ci = 0.95)
 A \code{data.frame} with one row per region and columns:
 \code{region_id}, \code{n}, \code{mean_effect}, \code{median_effect}, \code{ci_lo}, \code{ci_hi},
 \code{df}, \code{scale}, \code{p_pos}, \code{p_neg}, \code{p_gt_delta}, \code{p_lt_neg_delta}, \code{error}.
-Attributes: \code{delta}, \code{ci}, \code{contrast}.
+\code{df} is \code{NA_real_} for the empirical path.
 }
 \description{
-Given the output of \code{\link[=fit_bread_summary]{fit_bread_summary()}}, compute the marginal posterior
-location/scale/df of the contrast coefficient for each region, along with
-directional and threshold probabilities used by \code{\link[=classify_regions]{classify_regions()}}.
+Given the output of \code{\link[=fit_bread_summary]{fit_bread_summary()}} (conjugate backend) or
+\code{\link[=fit_bread_brms]{fit_bread_brms()}} (brms backend), compute the marginal posterior
+location / scale / credible interval of the contrast coefficient and the
+posterior probabilities used by \code{\link[=classify_regions]{classify_regions()}}.
 }
-\section{Math}{
+\section{Path selection}{
 
-Under the Normal-Inverse-Gamma conjugate update, the marginal posterior of
-the contrast coefficient is a location-scale Student-t:
-\deqn{\beta_{r,k} \mid y \sim t_{2 a_n}\!\left(\mu_{n,k},\ \tfrac{b_n}{a_n} [\Lambda_n^{-1}]_{kk}\right).}
-Posterior probabilities are computed as \code{P(beta > c) = 1 - pt((c - mu)/s, df)}.
+Each per-region fit carries either
+\itemize{
+\item \verb{$mu_n}, \verb{$Lambda_n_inv}, \verb{$a_n}, \verb{$b_n} (conjugate analytical path), in
+which case the marginal posterior of the contrast coefficient is a
+location-scale Student-t with \code{df = 2 * a_n}, or
+\item \verb{$draws} (brms empirical path), in which case posterior quantities are
+computed from the MCMC draws directly.
+}
+
+Columns in the returned data frame are the same in both cases.
 }
 

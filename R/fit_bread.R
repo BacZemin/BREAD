@@ -72,10 +72,10 @@ fit_bread <- function(se,
     stop("`mode = \"hierarchical\"` is not yet implemented in v1. ",
          "Use mode = \"summary\".", call. = FALSE)
   }
-  if (backend %in% c("brms", "cmdstanr")) {
-    stop("`backend = \"", backend,
-         "\"` is planned for v2 (hierarchical / non-conjugate priors). ",
-         "Use backend = \"conjugate\" (default).", call. = FALSE)
+  if (backend == "cmdstanr") {
+    stop("`backend = \"cmdstanr\"` is planned; install CmdStan and use ",
+         "the brms backend instead, or the default \"conjugate\".",
+         call. = FALSE)
   }
 
   # Phase 1: validate inputs (contrast may still be NULL at this point)
@@ -126,13 +126,26 @@ fit_bread <- function(se,
   )
 
   # Phase 6: fit conjugate posterior per region
-  model <- fit_bread_summary(
-    region_mat = region_mat,
-    coldata    = SummarizedExperiment::colData(se),
-    design     = design,
-    contrast   = contrast,
-    prior      = prior
-  )
+  model <- if (backend == "brms") {
+    fit_bread_brms(
+      region_mat = region_mat,
+      coldata    = SummarizedExperiment::colData(se),
+      design     = design,
+      contrast   = contrast,
+      iter       = iter,
+      chains     = chains,
+      cores      = cores,
+      seed       = seed
+    )
+  } else {
+    fit_bread_summary(
+      region_mat = region_mat,
+      coldata    = SummarizedExperiment::colData(se),
+      design     = design,
+      contrast   = contrast,
+      prior      = prior
+    )
+  }
 
   # Phase 7: posterior + classify
   post    <- posterior_summary(model, delta = delta, ci = 0.95)

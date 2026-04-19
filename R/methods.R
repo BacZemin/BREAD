@@ -64,29 +64,34 @@ setMethod("posterior_draws", "BreadFit",
            call. = FALSE)
     k <- object@model$contrast_idx
 
-    target <- if (is.null(region_id)) names(fits) else region_id
-    missing_rids <- setdiff(target, names(fits))
-    if (length(missing_rids) > 0L) {
+    target <- if (is.null(region_id)) names(fits) else as.character(region_id)
+    unknown <- setdiff(target, names(fits))
+    if (length(unknown) > 0L)
       stop("region_id(s) not found: ",
-           paste(shQuote(missing_rids), collapse = ", "), call. = FALSE)
-    }
+           paste(shQuote(unknown), collapse = ", "), call. = FALSE)
 
     rows <- lapply(target, function(rid) {
       f <- fits[[rid]]
-      if (!is.na(f$error)) {
+      if (!is.na(f$error))
         return(data.frame(region_id = rid, draw = seq_len(n),
                           value = NA_real_, stringsAsFactors = FALSE))
+      if (!is.null(f$draws) && length(f$draws) > 0L) {
+        # Empirical: resample MCMC draws to n
+        idx <- if (length(f$draws) >= n)
+                 sample.int(length(f$draws), n, replace = FALSE)
+               else
+                 sample.int(length(f$draws), n, replace = TRUE)
+        return(data.frame(region_id = rid, draw = seq_len(n),
+                          value = f$draws[idx], stringsAsFactors = FALSE))
       }
+      # Analytical: sample from scaled-t
       nu <- 2 * f$a_n
       mu <- f$mu_n[k]
       s  <- sqrt(max((f$b_n / f$a_n) * f$Lambda_n_inv[k, k],
                      .Machine$double.eps))
-      data.frame(
-        region_id = rid,
-        draw      = seq_len(n),
-        value     = mu + s * stats::rt(n, df = nu),
-        stringsAsFactors = FALSE
-      )
+      data.frame(region_id = rid, draw = seq_len(n),
+                 value = mu + s * stats::rt(n, df = nu),
+                 stringsAsFactors = FALSE)
     })
     do.call(rbind, rows)
   }

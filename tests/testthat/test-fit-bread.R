@@ -85,12 +85,8 @@ test_that("fit_bread guards hierarchical mode and brms backend", {
     "not yet implemented"
   )
   expect_error(
-    fit_bread(se, gr, ~ group, "groupold", backend = "brms"),
-    "planned for v2"
-  )
-  expect_error(
     fit_bread(se, gr, ~ group, "groupold", backend = "cmdstanr"),
-    "planned for v2"
+    "planned"
   )
 })
 

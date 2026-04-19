@@ -1,29 +1,35 @@
 #' Extract per-region posterior summaries
 #'
-#' Given the output of [fit_bread_summary()], compute the marginal posterior
-#' location/scale/df of the contrast coefficient for each region, along with
-#' directional and threshold probabilities used by [classify_regions()].
+#' Given the output of [fit_bread_summary()] (conjugate backend) or
+#' [fit_bread_brms()] (brms backend), compute the marginal posterior
+#' location / scale / credible interval of the contrast coefficient and the
+#' posterior probabilities used by [classify_regions()].
 #'
-#' @section Math:
-#' Under the Normal-Inverse-Gamma conjugate update, the marginal posterior of
-#' the contrast coefficient is a location-scale Student-t:
-#' \deqn{\beta_{r,k} \mid y \sim t_{2 a_n}\!\left(\mu_{n,k},\ \tfrac{b_n}{a_n} [\Lambda_n^{-1}]_{kk}\right).}
-#' Posterior probabilities are computed as `P(beta > c) = 1 - pt((c - mu)/s, df)`.
+#' @section Path selection:
+#' Each per-region fit carries either
+#' - `$mu_n`, `$Lambda_n_inv`, `$a_n`, `$b_n` (conjugate analytical path), in
+#'   which case the marginal posterior of the contrast coefficient is a
+#'   location-scale Student-t with `df = 2 * a_n`, or
+#' - `$draws` (brms empirical path), in which case posterior quantities are
+#'   computed from the MCMC draws directly.
 #'
-#' @param fit Output of [fit_bread_summary()].
+#' Columns in the returned data frame are the same in both cases.
+#'
+#' @param fit Output of [fit_bread_summary()] or [fit_bread_brms()].
 #' @param delta Effect-size threshold on the M-value scale. Default `0.10`.
 #' @param ci Credible-interval mass. Default `0.95`.
 #'
 #' @return A `data.frame` with one row per region and columns:
 #'   `region_id`, `n`, `mean_effect`, `median_effect`, `ci_lo`, `ci_hi`,
 #'   `df`, `scale`, `p_pos`, `p_neg`, `p_gt_delta`, `p_lt_neg_delta`, `error`.
-#'   Attributes: `delta`, `ci`, `contrast`.
+#'   `df` is `NA_real_` for the empirical path.
 #'
-#' @importFrom stats pt qt
+#' @importFrom stats pt qt median quantile sd
 #' @export
 posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
   if (!is.list(fit) || is.null(fit$fits) || is.null(fit$contrast_idx)) {
-    stop("`fit` must be the output of fit_bread_summary().", call. = FALSE)
+    stop("`fit` must be the output of fit_bread_summary() or fit_bread_brms().",
+         call. = FALSE)
   }
   if (!is.numeric(delta) || length(delta) != 1L || delta < 0) {
     stop("`delta` must be a non-negative scalar.", call. = FALSE)
@@ -38,24 +44,43 @@ posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
   rows <- lapply(seq_along(fit$fits), function(i) {
     f   <- fit$fits[[i]]
     rid <- fit$region_ids[i]
-    if (!is.na(f$error)) {
+
+    na_row <- data.frame(
+      region_id      = rid,
+      n              = if (is.null(f$n)) NA_integer_ else f$n,
+      mean_effect    = NA_real_, median_effect = NA_real_,
+      ci_lo          = NA_real_, ci_hi         = NA_real_,
+      df             = NA_real_, scale         = NA_real_,
+      p_pos          = NA_real_, p_neg         = NA_real_,
+      p_gt_delta     = NA_real_, p_lt_neg_delta = NA_real_,
+      error          = if (is.null(f$error)) NA_character_ else f$error,
+      stringsAsFactors = FALSE
+    )
+    if (!is.null(f$error) && !is.na(f$error)) return(na_row)
+
+    # Empirical path (brms)
+    if (!is.null(f$draws) && length(f$draws) > 0L) {
+      d <- f$draws
+      q <- stats::quantile(d, c(alpha, 1 - alpha), names = FALSE, type = 7L)
       return(data.frame(
         region_id      = rid,
         n              = f$n,
-        mean_effect    = NA_real_,
-        median_effect  = NA_real_,
-        ci_lo          = NA_real_,
-        ci_hi          = NA_real_,
+        mean_effect    = mean(d),
+        median_effect  = stats::median(d),
+        ci_lo          = q[1L],
+        ci_hi          = q[2L],
         df             = NA_real_,
-        scale          = NA_real_,
-        p_pos          = NA_real_,
-        p_neg          = NA_real_,
-        p_gt_delta     = NA_real_,
-        p_lt_neg_delta = NA_real_,
-        error          = f$error,
+        scale          = stats::sd(d),
+        p_pos          = mean(d > 0),
+        p_neg          = mean(d < 0),
+        p_gt_delta     = mean(d >  delta),
+        p_lt_neg_delta = mean(d < -delta),
+        error          = NA_character_,
         stringsAsFactors = FALSE
       ))
     }
+
+    # Analytical path (conjugate NIG)
     nu  <- 2 * f$a_n
     mu  <- f$mu_n[k]
     s2  <- (f$b_n / f$a_n) * f$Lambda_n_inv[k, k]
