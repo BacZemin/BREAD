@@ -1,16 +1,20 @@
+# R
 .Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
 .DS_Store
+
+# Build output / ephemera
 docs/
 inst/doc/
 /sandbox/
-*.rds
-inst/extdata/*.rds
-inst/extdata/*.h5ad
-inst/extdata/large/
 /scratch/
 *.log
 *.out
-.Rproj.user/
+*.h5ad
+
+# Default: do not commit serialized R objects...
+*.rds
+# ...except the small example data shipped with the package
+!inst/extdata/*.rds
