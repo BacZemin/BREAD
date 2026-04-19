@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   bread-intro: bread-intro.html
   bread-vitc: bread-vitc.html
-last_built: 2026-04-19T17:51Z
+last_built: 2026-04-19T17:55Z
 urls:
   reference: https://baczemin.github.io/BREAD/reference
   article: https://baczemin.github.io/BREAD/articles
