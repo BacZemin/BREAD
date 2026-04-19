@@ -56,6 +56,13 @@ tcga      <- sesameData::sesameDataGet("HM450.76.TCGA.matched")
 probeInfo <- sesameData::sesameDataGet("HM450.probeInfo")
 ```
 
+```{r cache, include = FALSE}
+sesameData::sesameDataCache(c(
+  "HM450.76.TCGA.matched",
+  "HM450.probeInfo"
+))
+```
+
 ```{r make-se}
 probes <- probeInfo$mapped.probes.hg38
 # keep only probes present in the TCGA beta matrix
