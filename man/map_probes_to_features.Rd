@@ -7,18 +7,34 @@
 map_probes_to_features(se, features, min_probes = 3L)
 }
 \arguments{
-\item{se}{A \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment} with \code{rowRanges()}.}
+\item{se}{A \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment} with
+non-empty \code{rowRanges()}.}
 
-\item{features}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} of regions.}
+\item{features}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} of regions. If \code{names(features)}
+is \code{NULL} or empty, IDs \verb{region_1, region_2, ...} are generated.}
 
-\item{min_probes}{Minimum probes per region. Default 3.}
+\item{min_probes}{Integer. Regions with fewer overlapping probes are
+dropped. Default \code{3L}.}
 }
 \value{
-A data frame with columns \code{probe_id}, \code{region_id}, feature metadata,
-and per-region overlap counts.
+A \code{data.frame} with (at minimum) columns
+\code{probe_id}, \code{probe_idx}, \code{region_id}, \code{region_idx}, \code{n_probes}, plus any
+\code{mcols(features)} columns. Attributes:
+\itemize{
+\item \code{dropped_regions} : character vector of region IDs excluded.
+\item \code{min_probes}      : the threshold applied.
+\item \code{n_features_in}   : regions supplied.
+\item \code{n_features_out}  : regions retained.
+}
 }
 \description{
-Computes probe-region overlap, filters regions with fewer than \code{min_probes},
-and returns a tidy mapping with preserved feature metadata.
+Computes probe-to-region overlaps, preserves feature metadata, and drops
+regions with fewer than \code{min_probes} overlapping probes.
+}
+\details{
+Probes that overlap multiple regions are emitted once per region (long
+format). Probes with no region are silently excluded from the returned
+mapping. Regions excluded by \code{min_probes} (including those with zero
+overlaps) are recorded on \code{attr(mapping, "dropped_regions")}.
 }
 \keyword{internal}

@@ -4,27 +4,37 @@
 \alias{validate_bread_input}
 \title{Validate inputs to \code{\link[=fit_bread]{fit_bread()}}}
 \usage{
-validate_bread_input(se, features, design, contrast, assay_name, input_scale)
+validate_bread_input(
+  se,
+  features,
+  design,
+  contrast = NULL,
+  assay_name = "M",
+  input_scale = c("M", "Beta")
+)
 }
 \arguments{
 \item{se}{A \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment}.}
 
-\item{features}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges}.}
+\item{features}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} of regions.}
 
-\item{design}{A one-sided formula.}
+\item{design}{A one-sided \code{formula}, e.g. \code{~ group + sex}.}
 
-\item{contrast}{Character coefficient name or \code{NULL}.}
+\item{contrast}{Character coefficient name, or \code{NULL} to defer.}
 
-\item{assay_name}{Character scalar.}
+\item{assay_name}{Character scalar naming an assay in \code{se}.}
 
 \item{input_scale}{\code{"M"} or \code{"Beta"}.}
 }
 \value{
-Invisibly \code{TRUE} on success; errors otherwise.
+Invisibly \code{TRUE}. Errors loudly on the first violation.
 }
 \description{
-Performs cheap structural checks before any modeling: assay presence,
-feature GRanges validity, design formula variables, contrast resolution,
-and scale consistency. Fails early with actionable messages.
+Cheap structural checks run before any modeling. Verifies that \code{se} is a
+\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment} with row-level genomic
+coordinates, that \code{features} is a non-empty \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges}, that
+\code{design} is a one-sided formula whose variables all live in \code{colData(se)},
+that \code{assay_name} is present, and that \code{contrast} (when non-NULL) resolves
+to a coefficient of the design's model matrix.
 }
 \keyword{internal}
