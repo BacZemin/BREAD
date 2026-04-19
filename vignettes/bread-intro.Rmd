@@ -54,13 +54,16 @@ library(patchwork)
 ```
 
 ```{r cache, include = FALSE}
-# Prime the ExperimentHub-backed caches on fresh systems (e.g. CI).
-# Using the actual Get / getDBs API calls makes this version-safe.
+# Prime ExperimentHub-backed caches on fresh systems (e.g. CI).
 sesameData::sesameDataCache(c("HM450.76.TCGA.matched", "HM450.probeInfo"))
-invisible(knowYourCG::getDBs(c(
-  "KYCG.HM450.chromHMM.20211020",
-  "KYCG.HM450.TFBSconsensus.20211013"
-)))
+kycg_names <- c("KYCG.HM450.chromHMM.20211020",
+                "KYCG.HM450.TFBSconsensus.20211013")
+if ("kycgDataCache" %in% getNamespaceExports("knowYourCG")) {
+  knowYourCG::kycgDataCache(kycg_names)        # knowYourCG >= 1.4
+} else {
+  try(sesameData::sesameDataCache(kycg_names),  # knowYourCG <= 1.2
+      silent = TRUE)
+}
 ```
 
 ```{r dataload, message = FALSE}
