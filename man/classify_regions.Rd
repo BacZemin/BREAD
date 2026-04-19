@@ -7,7 +7,7 @@
 classify_regions(post, delta = 0.1, prob_cutoff = 0.95)
 }
 \arguments{
-\item{post}{Output of \code{\link[brms:posterior_summary]{brms::posterior_summary()}}.}
+\item{post}{Output of \code{\link[=posterior_summary]{posterior_summary()}}.}
 
 \item{delta}{Effect-size threshold used for the rule. Default \code{0.10}. Stored
 as an attribute; does not re-evaluate the posterior probabilities (those
@@ -21,7 +21,7 @@ The input \code{data.frame} with an added \code{classification} factor column
 \code{delta} and \code{prob_cutoff} are updated.
 }
 \description{
-Applies the BREAD decision rule to the output of \code{\link[brms:posterior_summary]{brms::posterior_summary()}}:
+Applies the BREAD decision rule to the output of \code{\link[=posterior_summary]{posterior_summary()}}:
 \itemize{
 \item \code{hypermethylated} if \code{p_gt_delta >= prob_cutoff}
 \item \code{hypomethylated}  if \code{p_lt_neg_delta >= prob_cutoff}

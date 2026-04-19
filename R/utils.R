@@ -63,3 +63,22 @@ bread_colors <- function(which = c("classification", "group", "cross")) {
     cross          = .bread_cross
   )
 }
+
+# Internal: detect input scale from assay values.
+# Returns "Beta" if all non-NA values are in [0, 1], else "M".
+.detect_input_scale <- function(x) {
+  rng <- suppressWarnings(range(x, na.rm = TRUE))
+  if (all(is.finite(rng)) && rng[1L] >= 0 && rng[2L] <= 1) "Beta" else "M"
+}
+
+# Internal: pick a reasonable assay name when the user leaves it NULL.
+# Priority: "M", "betas", "Beta", "beta", then first assay.
+.detect_assay_name <- function(se) {
+  an <- SummarizedExperiment::assayNames(se)
+  if (is.null(an) || length(an) == 0L)
+    stop("`se` has no named assays; supply `assay_name` explicitly.",
+         call. = FALSE)
+  for (candidate in c("M", "betas", "Beta", "beta"))
+    if (candidate %in% an) return(candidate)
+  an[1L]
+}

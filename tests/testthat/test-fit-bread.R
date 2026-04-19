@@ -78,17 +78,6 @@ test_that("posterior_draws errors on unknown region_id", {
                "region_id\\(s\\) not found")
 })
 
-test_that("fit_bread guards hierarchical mode and brms backend", {
-  se <- .make_toy_signal_se(); gr <- .make_toy_features()
-  expect_error(
-    fit_bread(se, gr, ~ group, "groupold", mode = "hierarchical"),
-    "not yet implemented"
-  )
-  expect_error(
-    fit_bread(se, gr, ~ group, "groupold", backend = "cmdstanr"),
-    "planned"
-  )
-})
 
 test_that("fit_bread rejects unknown feature_class_col", {
   se <- .make_toy_signal_se(); gr <- .make_toy_features()

@@ -134,7 +134,7 @@ plot_region_data <- function(fit, region_id) {
   df <- data.frame(
     sample = colnames(region_mat),
     y      = unname(y),
-    group  = as.character(coldata[[group_var]]),
+    group  = coldata[[group_var]],
     stringsAsFactors = FALSE
   )
 

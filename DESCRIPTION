@@ -20,9 +20,11 @@ Suggests:
     brms,
     IRanges,
     knitr,
+    knowYourCG,
     patchwork,
     posterior,
     rmarkdown,
+    sesameData,
     testthat (>= 3.0.0),
     tidybayes
 Config/testthat/edition: 3

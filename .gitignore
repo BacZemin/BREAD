@@ -18,3 +18,4 @@ inst/doc/
 *.rds
 # ...except the small example data shipped with the package
 !inst/extdata/*.rds
+build_preview/

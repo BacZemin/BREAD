@@ -9,20 +9,16 @@ fit_bread(
   features,
   design,
   contrast = NULL,
-  assay_name = "M",
-  input_scale = c("M", "Beta"),
-  mode = c("summary", "hierarchical"),
-  summary_fun = c("mean", "median", "weighted_mean", "pc1"),
   delta = 0.1,
   prob_cutoff = 0.95,
   min_probes = 3L,
   feature_class_col = NULL,
-  backend = c("conjugate", "brms", "cmdstanr"),
+  summary_fun = c("mean", "median", "weighted_mean", "pc1"),
+  assay_name = NULL,
+  input_scale = NULL,
+  backend = c("conjugate", "brms"),
   prior = NULL,
-  iter = 2000L,
-  chains = 4L,
-  cores = 4L,
-  seed = 1L
+  ...
 )
 }
 \arguments{
@@ -35,14 +31,6 @@ fit_bread(
 \item{contrast}{Character coefficient name of interest. If \code{NULL} (default),
 the first non-intercept coefficient is used and a message is emitted.}
 
-\item{assay_name}{Assay name in \code{se}. Default \code{"M"}.}
-
-\item{input_scale}{\code{"M"} or \code{"Beta"}. Beta inputs are converted to M internally.}
-
-\item{mode}{\code{"summary"} (v1) or \code{"hierarchical"} (planned).}
-
-\item{summary_fun}{Region summary: \code{"mean"} (default), \code{"median"}, \code{"weighted_mean"}, \code{"pc1"}.}
-
 \item{delta}{Effect-size threshold on the M-value scale. Default \code{0.10}.}
 
 \item{prob_cutoff}{Posterior probability cutoff for classification. Default \code{0.95}.}
@@ -50,14 +38,21 @@ the first non-intercept coefficient is used and a message is emitted.}
 \item{min_probes}{Minimum probes per region. Default \code{3}.}
 
 \item{feature_class_col}{Column in \code{mcols(features)} giving feature class
-(reserved for class-level pooling in M3).}
+(used by \code{plot_feature_set()}; reserved for class-level pooling in M3).}
 
-\item{backend}{One of \code{"conjugate"} (default, v1), \code{"brms"}, \code{"cmdstanr"}.}
+\item{summary_fun}{Region summary: \code{"mean"} (default), \code{"median"},
+\code{"weighted_mean"}, or \code{"pc1"}.}
 
-\item{prior}{A \code{\link[=bread_prior]{bread_prior()}} object or \code{NULL} for defaults.}
+\item{assay_name}{Assay name in \code{se}. \code{NULL} auto-detects.}
 
-\item{iter, chains, cores, seed}{MCMC settings. Reserved for \code{"brms"} /
-\code{"cmdstanr"} backends; ignored under \code{"conjugate"}.}
+\item{input_scale}{\code{"M"} or \code{"Beta"}. \code{NULL} auto-detects from value range.}
+
+\item{backend}{One of \code{"conjugate"} (default) or \code{"brms"}.}
+
+\item{prior}{Optional \code{\link[=bread_prior]{bread_prior()}} object (conjugate backend only).}
+
+\item{...}{Additional arguments forwarded to the backend. For
+\code{backend = "brms"}, this accepts \code{iter}, \code{chains}, \code{cores}, \code{seed}, etc.}
 }
 \value{
 A \link{BreadFit} object. Use \code{\link[=results]{results()}}, \code{\link[=classifications]{classifications()}}, or
@@ -65,22 +60,38 @@ A \link{BreadFit} object. Use \code{\link[=results]{results()}}, \code{\link[=cl
 }
 \description{
 Main user-facing entry point. Given a \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment}
-with a methylation assay and a \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} of predefined regions,
-BREAD maps probes to regions, summarizes them per sample, and fits Bayesian
-region-level models to produce posterior probabilities of directional
-methylation change under the contrast of interest. Regions are classified
-as hypermethylated, hypomethylated, or inconclusive.
+with a methylation assay and a \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} of predefined
+regions, BREAD maps probes to regions, summarizes them per sample, and
+fits Bayesian region-level models to produce posterior probabilities of
+directional methylation change under the contrast of interest. Regions
+are classified as hypermethylated, hypomethylated, or inconclusive.
 }
-\section{v1 backend}{
+\section{Minimal call}{
 
-\code{fit_bread()} uses an exact conjugate Normal-Inverse-Gamma posterior
-(\code{backend = "conjugate"}). \code{"brms"} and \code{"cmdstanr"} are planned for v2
-(needed for partial pooling, non-conjugate priors, hierarchical mode) and
-currently error. The MCMC arguments \code{iter}, \code{chains}, \code{cores}, \code{seed} are
-reserved for those backends and are no-ops under \code{"conjugate"}.
+The typical call is:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{fit_bread(se, features, ~ condition)
+}\if{html}{\out{</div>}}
+
+Everything else has a sensible default. In particular:
+\itemize{
+\item \code{contrast} defaults to the first non-intercept coefficient,
+\item \code{assay_name} auto-detects from the first assay that looks like methylation
+(prefers \code{"M"}, \code{"betas"}, \code{"Beta"}, \code{"beta"}),
+\item \code{input_scale} auto-detects from the assay value range (\verb{[0,1]} → \code{"Beta"},
+otherwise \code{"M"}).
+}
+}
+
+\section{Backends}{
+
+Default is an exact conjugate Normal-Inverse-Gamma posterior (fast, no
+MCMC). \code{backend = "brms"} routes to \code{brms::brm()} (one compile + per-region
+updates); MCMC controls \code{iter}, \code{chains}, \code{cores}, \code{seed} can be passed
+through \code{...} to \code{fit_bread_brms()}.
 }
 
 \seealso{
 \code{\link[=validate_bread_input]{validate_bread_input()}}, \code{\link[=map_probes_to_features]{map_probes_to_features()}},
-\code{\link[=summarize_features]{summarize_features()}}, \code{\link[brms:posterior_summary]{brms::posterior_summary()}}, \code{\link[=classify_regions]{classify_regions()}}
+\code{\link[=summarize_features]{summarize_features()}}, \code{\link[=posterior_summary]{posterior_summary()}}, \code{\link[=classify_regions]{classify_regions()}}
 }
