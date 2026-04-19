@@ -82,5 +82,5 @@ reserved for those backends and are no-ops under \code{"conjugate"}.
 
 \seealso{
 \code{\link[=validate_bread_input]{validate_bread_input()}}, \code{\link[=map_probes_to_features]{map_probes_to_features()}},
-\code{\link[=summarize_features]{summarize_features()}}, \code{\link[=posterior_summary]{posterior_summary()}}, \code{\link[=classify_regions]{classify_regions()}}
+\code{\link[=summarize_features]{summarize_features()}}, \code{\link[brms:posterior_summary]{brms::posterior_summary()}}, \code{\link[=classify_regions]{classify_regions()}}
 }

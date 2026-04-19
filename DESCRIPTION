@@ -18,24 +18,22 @@ RoxygenNote: 7.3.3
 Suggests: 
     BiocParallel,
     brms,
-    cmdstanr,
+    IRanges,
     knitr,
+    patchwork,
     posterior,
     rmarkdown,
     testthat (>= 3.0.0),
     tidybayes
 Config/testthat/edition: 3
 Imports: 
-    dplyr,
     GenomicRanges,
     ggplot2,
-    IRanges,
     methods,
     rlang,
     S4Vectors,
     stats,
-    SummarizedExperiment,
-    tidyr
+    SummarizedExperiment
 biocViews: DNAMethylation, Bayesian, Epigenetics, DifferentialMethylation, MethylationArray
 URL: https://github.com/BacZemin/BREAD
 BugReports: https://github.com/BacZemin/BREAD/issues

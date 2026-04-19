@@ -32,7 +32,7 @@ A list with:
 v1 MVP fit. For each region, fits a Normal linear regression
 \code{y ~ design} with a conjugate Normal-Inverse-Gamma prior, yielding an
 analytical posterior — no MCMC. The marginal posterior of each coefficient
-is a location-scale Student-t, used downstream by \code{\link[=posterior_summary]{posterior_summary()}}.
+is a location-scale Student-t, used downstream by \code{\link[brms:posterior_summary]{brms::posterior_summary()}}.
 }
 \section{Model}{
 

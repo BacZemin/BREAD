@@ -92,6 +92,8 @@ setMethod("posterior_draws", "BreadFit",
   }
 )
 
+#' @rdname BREAD-methods
+#' @importFrom methods show
 #' @export
 setMethod("show", "BreadFit", function(object) {
   cat("<BreadFit>\n")

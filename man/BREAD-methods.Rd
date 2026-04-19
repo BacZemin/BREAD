@@ -2,7 +2,11 @@
 % Please edit documentation in R/methods.R
 \name{BREAD-methods}
 \alias{BREAD-methods}
+\alias{show,BreadFit-method}
 \title{Methods for \link{BreadFit} and \link{BreadResults}}
+\usage{
+\S4method{show}{BreadFit}(object)
+}
 \description{
 Methods for \link{BreadFit} and \link{BreadResults}
 }

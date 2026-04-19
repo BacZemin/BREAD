@@ -1,17 +1,24 @@
-#' S4 classes for BREAD
+#' The `BreadFit` S4 class
 #'
-#' `BreadFit` holds a fitted Bayesian region-level methylation model together
-#' with mapping metadata, posterior summaries, and diagnostics. `BreadResults`
-#' is the tidy region-level result table returned by [results()].
+#' Main fitted object returned by [fit_bread()]. Thin S4 wrapper with stable
+#' slots that downstream packages can depend on.
 #'
-#' Both classes are intentionally thin S4 wrappers so the internals remain
-#' inspectable and the slots are stable entry points for downstream packages.
+#' @slot call The original `fit_bread()` call.
+#' @slot params List of parameters used (delta, prob_cutoff, summary_fun,
+#'   mode, backend, contrast, min_probes, feature_class_col, iter, chains,
+#'   cores, seed).
+#' @slot mode `"summary"` or `"hierarchical"`.
+#' @slot assay_name Assay name used from `se`.
+#' @slot input_scale `"M"` or `"Beta"`.
+#' @slot mapping Probe-to-region data frame from [map_probes_to_features()].
+#' @slot features `GRanges` of regions that survived `min_probes` filtering.
+#' @slot model Internal fit object from [fit_bread_summary()].
+#' @slot posterior Per-region posterior summary data frame.
+#' @slot results Per-region data frame with classification column.
+#' @slot diagnostics List with backend, seed, feature counts, failure counts.
 #'
-#' @name BREAD-classes
-#' @keywords internal
-NULL
-
-#' @rdname BREAD-classes
+#' @name BreadFit
+#' @aliases BreadFit-class
 #' @exportClass BreadFit
 setClass(
   "BreadFit",
@@ -37,7 +44,16 @@ setClass(
   )
 )
 
-#' @rdname BREAD-classes
+#' The `BreadResults` S4 class
+#'
+#' Structured result table wrapper. Reserved for downstream reporting helpers
+#' that may want a dedicated class rather than a bare data.frame.
+#'
+#' @slot table A `data.frame` of per-region results.
+#' @slot params List of classification parameters.
+#'
+#' @name BreadResults
+#' @aliases BreadResults-class
 #' @exportClass BreadResults
 setClass(
   "BreadResults",
