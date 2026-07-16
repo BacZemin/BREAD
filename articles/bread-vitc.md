@@ -30,6 +30,7 @@ design (condition × passage × 2 technical replicates). The data-raw
 builder is `data-raw/make_vitc_extdata.R` (in the source repository).
 
 ``` r
+
 library(BREAD)
 library(SummarizedExperiment)
 library(GenomicRanges)
@@ -51,6 +52,7 @@ se
 ```
 
 ``` r
+
 as.data.frame(colData(se)[, c("condition", "passage", "replicate")])
 #>                     condition passage replicate
 #> 209725120091_R01C01      ctrl   early         1
@@ -64,6 +66,7 @@ as.data.frame(colData(se)[, c("condition", "passage", "replicate")])
 ```
 
 ``` r
+
 length(reg); table(reg$feature_class)
 #> [1] 500
 #> 
@@ -84,6 +87,7 @@ well-known aging signatures: PRC-CGI hypermethylation and PMD-soloWCGW
 hypomethylation.
 
 ``` r
+
 se_ctrl <- se[, colData(se)$condition == "ctrl"]
 fit_aging <- fit_bread(
   se            = se_ctrl,
@@ -115,6 +119,7 @@ fit_aging
 ### Classifications by class
 
 ``` r
+
 mp       <- unique(fit_aging@mapping[, c("region_id", "feature_class")])
 res_a    <- merge(results(fit_aging)[, c("region_id", "classification")],
                   mp, by = "region_id")
@@ -137,6 +142,7 @@ consistent with the weaker direct effect at those regulatory elements.
 ### Bird’s-eye plot
 
 ``` r
+
 plot_feature_set(fit_aging, feature_class_col = "feature_class") +
   ggtitle("Aging (late vs early), ctrl samples")
 ```
@@ -149,6 +155,7 @@ Now condition on late passage and test whether ascorbic acid
 supplementation demethylates any regions.
 
 ``` r
+
 se_late <- se[, colData(se)$passage == "late"]
 fit_vitc <- fit_bread(
   se            = se_late,
@@ -177,6 +184,7 @@ fit_vitc
 ```
 
 ``` r
+
 res_v <- merge(results(fit_vitc)[, c("region_id", "classification")],
                mp, by = "region_id")
 table(res_v$feature_class, res_v$classification)
@@ -190,6 +198,7 @@ table(res_v$feature_class, res_v$classification)
 ```
 
 ``` r
+
 plot_feature_set(fit_vitc, feature_class_col = "feature_class") +
   ggtitle("VitC (aa57 vs ctrl), late passage")
 ```
@@ -207,6 +216,7 @@ The most interpretable cross-tab is *aging × VitC*: which regions that
 hypermethylate with aging are demethylated by vitamin C?
 
 ``` r
+
 a <- classifications(fit_aging)
 v <- classifications(fit_vitc)
 common <- intersect(names(a), names(v))
@@ -224,6 +234,7 @@ The **aging-hyper ∩ VitC-hypo** cell contains the candidate
 the project is chasing.
 
 ``` r
+
 protected <- names(a)[a == "hypermethylated" & v == "hypomethylated"]
 length(protected)
 #> [1] 17
@@ -241,6 +252,7 @@ recruitment.
 ## Zooming in on one region
 
 ``` r
+
 if (length(protected) > 0L) {
   rid <- protected[1]
   rid
@@ -252,6 +264,7 @@ if (length(protected) > 0L) {
 ![](bread-vitc_files/figure-html/protected-first-1.png)
 
 ``` r
+
 if (length(protected) > 0L) {
   rid <- protected[1]
   p_aging <- plot_region_data(fit_aging, rid) +
@@ -265,6 +278,7 @@ if (length(protected) > 0L) {
 ![](bread-vitc_files/figure-html/protected-data-1.png)
 
 ``` r
+
 if (length(protected) > 0L) {
   rid <- protected[1]
   d <- posterior_draws(fit_vitc, region_id = rid, n = 2000L, seed = 1L)
@@ -301,8 +315,9 @@ if (length(protected) > 0L) {
 ## Session info
 
 ``` r
+
 sessionInfo()
-#> R version 4.5.3 (2026-03-11)
+#> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.4 LTS
 #> 
@@ -324,30 +339,31 @@ sessionInfo()
 #> [8] base     
 #> 
 #> other attached packages:
-#>  [1] patchwork_1.3.2             ggplot2_4.0.2              
-#>  [3] SummarizedExperiment_1.40.0 Biobase_2.70.0             
-#>  [5] GenomicRanges_1.62.1        Seqinfo_1.0.0              
-#>  [7] IRanges_2.44.0              S4Vectors_0.48.1           
-#>  [9] BiocGenerics_0.56.0         generics_0.1.4             
-#> [11] MatrixGenerics_1.22.0       matrixStats_1.5.0          
+#>  [1] patchwork_1.3.2             ggplot2_4.0.3              
+#>  [3] SummarizedExperiment_1.42.0 Biobase_2.72.0             
+#>  [5] GenomicRanges_1.64.0        Seqinfo_1.2.0              
+#>  [7] IRanges_2.46.0              S4Vectors_0.50.1           
+#>  [9] BiocGenerics_0.58.1         generics_0.1.4             
+#> [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          
 #> [13] BREAD_0.0.0.9000           
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] sass_0.4.10         SparseArray_1.10.10 lattice_0.22-9     
-#>  [4] digest_0.6.39       magrittr_2.0.5      evaluate_1.0.5     
-#>  [7] grid_4.5.3          RColorBrewer_1.1-3  fastmap_1.2.0      
-#> [10] jsonlite_2.0.0      Matrix_1.7-4        GenomeInfoDb_1.46.2
-#> [13] httr_1.4.8          UCSC.utils_1.6.1    scales_1.4.0       
+#>  [1] sass_0.4.10         SparseArray_1.12.2  lattice_0.22-9     
+#>  [4] magrittr_2.0.5      digest_0.6.39       evaluate_1.0.5     
+#>  [7] grid_4.6.1          RColorBrewer_1.1-3  fastmap_1.2.0      
+#> [10] jsonlite_2.0.0      Matrix_1.7-5        GenomeInfoDb_1.48.0
+#> [13] httr_1.4.8          UCSC.utils_1.8.0    scales_1.4.0       
 #> [16] textshaping_1.0.5   jquerylib_0.1.4     abind_1.4-8        
-#> [19] cli_3.6.6           rlang_1.2.0         XVector_0.50.0     
-#> [22] withr_3.0.2         cachem_1.1.0        DelayedArray_0.36.1
-#> [25] yaml_2.3.12         S4Arrays_1.10.1     tools_4.5.3        
-#> [28] dplyr_1.2.1         vctrs_0.7.3         R6_2.6.1           
-#> [31] lifecycle_1.0.5     fs_2.1.0            ragg_1.5.2         
-#> [34] pkgconfig_2.0.3     desc_1.4.3          pkgdown_2.2.0      
-#> [37] bslib_0.10.0        pillar_1.11.1       gtable_0.3.6       
-#> [40] glue_1.8.1          systemfonts_1.3.2   tidyselect_1.2.1   
-#> [43] tibble_3.3.1        xfun_0.57           knitr_1.51         
-#> [46] farver_2.1.2        htmltools_0.5.9     labeling_0.4.3     
-#> [49] rmarkdown_2.31      compiler_4.5.3      S7_0.2.1-1
+#> [19] cli_3.6.6           rlang_1.3.0         XVector_0.52.0     
+#> [22] withr_3.0.3         cachem_1.1.0        DelayedArray_0.38.2
+#> [25] yaml_2.3.12         otel_0.2.0          S4Arrays_1.12.0    
+#> [28] tools_4.6.1         dplyr_1.2.1         vctrs_0.7.3        
+#> [31] R6_2.6.1            lifecycle_1.0.5     fs_2.1.0           
+#> [34] ragg_1.5.2          pkgconfig_2.0.3     desc_1.4.3         
+#> [37] pillar_1.11.1       pkgdown_2.2.1       bslib_0.11.0       
+#> [40] gtable_0.3.6        glue_1.8.1          systemfonts_1.3.2  
+#> [43] tidyselect_1.2.1    tibble_3.3.1        xfun_0.60          
+#> [46] knitr_1.51          dichromat_2.0-0.1   farver_2.1.2       
+#> [49] htmltools_0.5.9     labeling_0.4.3      rmarkdown_2.31     
+#> [52] compiler_4.6.1      S7_0.2.2
 ```

@@ -10,6 +10,10 @@ Initial MVP — milestone 1.
   — end-to-end pipeline: validate → map → summarize → fit Bayesian
   region-level model → classify. Default backend is a conjugate
   Normal-Inverse-Gamma posterior computed analytically (no MCMC).
+- `backend = "brms"` — optional full MCMC backend via Stan; compiles the
+  model once, then reuses it across regions with
+  [`update()`](https://rdrr.io/r/stats/update.html). Shares the same
+  downstream posterior/classification path as the conjugate backend.
 - [`bread_prior()`](https://baczemin.github.io/BREAD/reference/bread_prior.md)
   — constructor for weakly-informative priors.
 - [`validate_bread_input()`](https://baczemin.github.io/BREAD/reference/validate_bread_input.md),
@@ -22,6 +26,10 @@ Initial MVP — milestone 1.
   [`plot_region_data()`](https://baczemin.github.io/BREAD/reference/plot_region_data.md),
   [`plot_feature_set()`](https://baczemin.github.io/BREAD/reference/plot_feature_set.md)
   — publication-oriented `ggplot2` helpers for BreadFit output.
+- [`bread_kycg()`](https://baczemin.github.io/BREAD/reference/bread_kycg.md)
+  — KnowYourCG enrichment on the probes in hyper- or hypo-classified
+  regions via
+  [`knowYourCG::testEnrichment()`](https://rdrr.io/pkg/knowYourCG/man/testEnrichment.html).
 - [`bread_colors()`](https://baczemin.github.io/BREAD/reference/bread_colors.md)
   — MetBrewer `Cross` palette embedded as hex (no runtime dependency on
   the MetBrewer package).
@@ -33,7 +41,7 @@ Initial MVP — milestone 1.
 
 ### Known scope
 
-- `mode = "hierarchical"` and `backend` in `c("brms", "cmdstanr")` are
-  scaffolded with “planned for v2” errors.
-- Hand-coded conjugate backend covers summary mode only; partial pooling
-  across regions and class-level priors are deferred to M3.
+- `backend = "cmdstanr"` and `mode = "hierarchical"` are scaffolded with
+  “planned for a later release” errors.
+- Both backends fit each region independently (summary mode). Partial
+  pooling across regions and class-level priors are deferred to M3.

@@ -23,6 +23,7 @@ hypermethylation at Polycomb targets and hypomethylation in
 partially-methylated / quiescent regions.
 
 ``` r
+
 library(BREAD)
 library(sesameData)
 library(knowYourCG)
@@ -33,11 +34,13 @@ library(patchwork)
 ```
 
 ``` r
+
 tcga      <- sesameData::sesameDataGet("HM450.76.TCGA.matched")
 probeInfo <- sesameData::sesameDataGet("HM450.probeInfo")
 ```
 
 ``` r
+
 probes <- probeInfo$mapped.probes.hg38
 # keep only probes present in the TCGA beta matrix
 keep   <- intersect(rownames(tcga$betas), names(probes))
@@ -66,6 +69,7 @@ state, then merge nearby same-state probes into intervals. This gives us
 biologically meaningful feature classes with no manual annotation work.
 
 ``` r
+
 chromhmm <- knowYourCG::getDBs("KYCG.HM450.chromHMM.20211020")
 #> Selected the following database groups:
 #> 1. KYCG.HM450.chromHMM.20211020
@@ -115,6 +119,7 @@ auto-detects the assay (`"betas"`) and the scale (`"Beta"` from the
 value range), so the minimal call is:
 
 ``` r
+
 fit <- fit_bread(se, features, design = ~ type,
                  feature_class_col = "feature_class")
 #> `contrast` not supplied; using 'typeTumour' (first non-intercept coefficient).
@@ -142,6 +147,7 @@ you want to be stricter or looser.
 ## Results
 
 ``` r
+
 res <- results(fit)
 head(res[order(res$p_gt_delta, decreasing = TRUE),
          c("region_id", "mean_effect", "ci_lo", "ci_hi",
@@ -161,6 +167,7 @@ head(res[order(res$p_gt_delta, decreasing = TRUE),
 ```
 
 ``` r
+
 mp <- unique(fit@mapping[, c("region_id", "feature_class")])
 cls_tbl <- merge(res[, c("region_id", "classification")], mp,
                  by = "region_id")
@@ -185,6 +192,7 @@ Classic tumor methylome signatures come through:
 ### Classification summary
 
 ``` r
+
 plot_feature_set(fit, feature_class_col = "feature_class") +
   ggtitle("Region classifications by chromatin class")
 ```
@@ -198,6 +206,7 @@ underlying values. The x-axis preserves the factor order we set on
 `se$type` — Normal on the left, Tumour on the right.
 
 ``` r
+
 top_hyper <- res[res$classification == "hypermethylated", ]
 top_hyper <- top_hyper[order(top_hyper$p_gt_delta, decreasing = TRUE), ]
 rid <- top_hyper$region_id[1]
@@ -214,6 +223,7 @@ p1 | p2
 ### Posterior draws
 
 ``` r
+
 d <- posterior_draws(fit, region_id = rid, n = 2000L, seed = 1L)
 ggplot(d, aes(x = value)) +
   geom_histogram(
@@ -242,6 +252,7 @@ against curated HM450 databases (TFBS, chromHMM, tissue signatures, …).
 The universe is the set of probes BREAD actually tested.
 
 ``` r
+
 enr <- bread_kycg(
   fit,
   which    = c("hypermethylated", "hypomethylated"),
@@ -251,18 +262,7302 @@ enr <- bread_kycg(
     "KYCG.HM450.TFBSconsensus.20211013"
   )
 )
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
+#> Warning in phyper(nDQ - 1, m, n, k, lower.tail = FALSE, log.p = TRUE): NaNs
+#> produced
+#> Warning in sqrt(as.numeric(nD) * (nU - nD) * nQ * (nU - nQ)): NaNs produced
+#> Warning in data.frame(estimate = log2(odds_ratio), p.value = 10^log10.p.value,
+#> : NaNs produced
 head(enr[order(enr$FDR), c("query", "dbname", "estimate", "p.value", "FDR")], 10)
-#>                query     dbname estimate       p.value           FDR
-#> 7    hypermethylated  13_ReprPC 2.492675 9.169409e-119 1.375411e-117
-#> 10   hypermethylated  10_TssBiv 3.148114  3.033733e-33  2.275300e-32
-#> 575  hypermethylated      SUZ12 2.632807  2.240567e-25  1.684906e-22
-#> 4100  hypomethylated      7_Enh 2.424841  2.290214e-22  3.435321e-21
-#> 8    hypermethylated 11_BivFlnk 2.304095  6.234736e-21  3.117368e-20
-#> 9    hypermethylated  12_EnhBiv 3.155925  8.630439e-21  3.236415e-20
-#> 184  hypermethylated       EZH2 2.238574  1.428187e-18  5.369982e-16
-#> 3011  hypomethylated      KDM3B 2.141150  1.102996e-11  8.294530e-09
-#> 768   hypomethylated       CBX8 1.050896  5.775541e-11  2.171603e-08
-#> 3201  hypomethylated       KLF6 1.210028  1.361622e-10  3.413133e-08
+#>                query     dbname estimate p.value FDR
+#> 12   hypermethylated     6_EnhG    -1022       1   1
+#> 13   hypermethylated   3_TxFlnk    -1022       1   1
+#> 14   hypermethylated 8_ZNF/Rpts    -1022       1   1
+#> 15   hypermethylated      9_Het    -1022       1   1
+#> 1210  hypomethylated     6_EnhG    -1022       1   1
+#> 1310  hypomethylated   3_TxFlnk    -1022       1   1
+#> 1410  hypomethylated 8_ZNF/Rpts    -1022       1   1
+#> 1510  hypomethylated      9_Het    -1022       1   1
+#> 5    hypermethylated       4_Tx    -1022     NaN NaN
+#> 19   hypermethylated       AFF4    -1022     NaN NaN
 ```
 
 The top hits on the hyper set should be Polycomb / bivalent-promoter
@@ -275,18 +7570,22 @@ For each region *r*, the default backend fits a conjugate
 Normal–Inverse-Gamma regression on the region-level mean beta
 (transformed to M):
 
-$$y_{ir} \sim \mathcal{N}\left( X_{i}\beta_{r},\ \sigma_{r}^{2} \right),\quad\beta_{r} \mid \sigma_{r}^{2} \sim \mathcal{N}\left( \mu_{0},\ \sigma_{r}^{2}\Lambda_{0}^{- 1} \right),\quad\sigma_{r}^{2} \sim \text{Inv-Gamma}\left( a_{0},b_{0} \right).$$
+``` math
+y_{ir} \sim \mathcal{N}(X_i\beta_r,\ \sigma_r^2),\quad
+\beta_r\mid\sigma_r^2 \sim \mathcal{N}(\mu_0,\ \sigma_r^2\Lambda_0^{-1}),\quad
+\sigma_r^2 \sim \text{Inv-Gamma}(a_0, b_0).
+```
 
 The marginal posterior of the contrast coefficient is a location–scale
 Student-t with `df = 2 a_n`. BREAD uses
 [`pt()`](https://rdrr.io/r/stats/TDist.html)/[`qt()`](https://rdrr.io/r/stats/TDist.html)
-to compute $P(\beta > \delta)$ and $P(\beta < - \delta)$ analytically —
-no MCMC.
+to compute $`P(\beta > \delta)`$ and $`P(\beta < -\delta)`$ analytically
+— no MCMC.
 
 The classification rule is then:
 
-- **hypermethylated** if $P(\beta > \delta) \geq$`prob_cutoff`,
-- **hypomethylated** if $P(\beta < - \delta) \geq$`prob_cutoff`,
+- **hypermethylated** if $`P(\beta > \delta) \ge`$`prob_cutoff`,
+- **hypomethylated** if $`P(\beta < -\delta) \ge`$`prob_cutoff`,
 - **inconclusive** otherwise.
 
 Need partial pooling across regions, non-conjugate priors, or ordered
@@ -295,8 +7594,9 @@ contrasts? Set `backend = "brms"`; everything else stays the same.
 ## Session info
 
 ``` r
+
 sessionInfo()
-#> R version 4.5.3 (2026-03-11)
+#> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.4 LTS
 #> 
@@ -318,42 +7618,43 @@ sessionInfo()
 #> [8] base     
 #> 
 #> other attached packages:
-#>  [1] patchwork_1.3.2             ggplot2_4.0.2              
-#>  [3] SummarizedExperiment_1.40.0 Biobase_2.70.0             
-#>  [5] GenomicRanges_1.62.1        Seqinfo_1.0.0              
-#>  [7] IRanges_2.44.0              S4Vectors_0.48.1           
-#>  [9] MatrixGenerics_1.22.0       matrixStats_1.5.0          
-#> [11] knowYourCG_1.6.3            sesameData_1.28.0          
-#> [13] ExperimentHub_3.0.0         AnnotationHub_4.0.0        
-#> [15] BiocFileCache_3.0.0         dbplyr_2.5.2               
-#> [17] BiocGenerics_0.56.0         generics_0.1.4             
+#>  [1] patchwork_1.3.2             ggplot2_4.0.3              
+#>  [3] SummarizedExperiment_1.42.0 Biobase_2.72.0             
+#>  [5] GenomicRanges_1.64.0        Seqinfo_1.2.0              
+#>  [7] IRanges_2.46.0              S4Vectors_0.50.1           
+#>  [9] MatrixGenerics_1.24.0       matrixStats_1.5.0          
+#> [11] knowYourCG_1.8.0            sesameData_1.30.0          
+#> [13] ExperimentHub_3.2.0         AnnotationHub_4.2.2        
+#> [15] BiocFileCache_3.2.0         dbplyr_2.6.0               
+#> [17] BiocGenerics_0.58.1         generics_0.1.4             
 #> [19] BREAD_0.0.0.9000           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1     dplyr_1.2.1          farver_2.1.2        
-#>  [4] blob_1.3.0           filelock_1.0.3       Biostrings_2.78.0   
-#>  [7] S7_0.2.1-1           fastmap_1.2.0        digest_0.6.39       
-#> [10] lifecycle_1.0.5      KEGGREST_1.50.0      RSQLite_2.4.6       
-#> [13] magrittr_2.0.5       compiler_4.5.3       rlang_1.2.0         
-#> [16] sass_0.4.10          tools_4.5.3          yaml_2.3.12         
-#> [19] knitr_1.51           labeling_0.4.3       S4Arrays_1.10.1     
-#> [22] bit_4.6.0            curl_7.0.0           DelayedArray_0.36.1 
+#>  [4] blob_1.3.0           filelock_1.0.3       Biostrings_2.80.1   
+#>  [7] S7_0.2.2             fastmap_1.2.0        digest_0.6.39       
+#> [10] lifecycle_1.0.5      KEGGREST_1.52.2      RSQLite_3.53.3      
+#> [13] magrittr_2.0.5       compiler_4.6.1       rlang_1.3.0         
+#> [16] sass_0.4.10          tools_4.6.1          yaml_2.3.12         
+#> [19] knitr_1.51           labeling_0.4.3       S4Arrays_1.12.0     
+#> [22] bit_4.6.0            curl_7.1.0           DelayedArray_0.38.2 
 #> [25] plyr_1.8.9           RColorBrewer_1.1-3   abind_1.4-8         
-#> [28] purrr_1.2.2          withr_3.0.2          desc_1.4.3          
-#> [31] grid_4.5.3           wheatmap_0.2.0       colorspace_2.1-2    
-#> [34] scales_1.4.0         cli_3.6.6            rmarkdown_2.31      
-#> [37] crayon_1.5.3         ragg_1.5.2           httr_1.4.8          
-#> [40] reshape2_1.4.5       tzdb_0.5.0           DBI_1.3.0           
-#> [43] cachem_1.1.0         stringr_1.6.0        AnnotationDbi_1.72.0
-#> [46] BiocManager_1.30.27  XVector_0.50.0       vctrs_0.7.3         
-#> [49] Matrix_1.7-4         jsonlite_2.0.0       hms_1.1.4           
-#> [52] bit64_4.6.0-1        ggrepel_0.9.8        systemfonts_1.3.2   
-#> [55] jquerylib_0.1.4      glue_1.8.1           pkgdown_2.2.0       
-#> [58] stringi_1.8.7        gtable_0.3.6         BiocVersion_3.22.0  
-#> [61] tibble_3.3.1         pillar_1.11.1        rappdirs_0.3.4      
-#> [64] htmltools_0.5.9      R6_2.6.1             httr2_1.2.2         
-#> [67] textshaping_1.0.5    lattice_0.22-9       evaluate_1.0.5      
-#> [70] readr_2.2.0          png_0.1-9            memoise_2.0.1       
-#> [73] bslib_0.10.0         Rcpp_1.1.1-1         SparseArray_1.10.10 
-#> [76] xfun_0.57            fs_2.1.0             pkgconfig_2.0.3
+#> [28] purrr_1.2.2          withr_3.0.3          desc_1.4.3          
+#> [31] grid_4.6.1           wheatmap_0.2.4       colorspace_2.1-3    
+#> [34] scales_1.4.0         dichromat_2.0-0.1    cli_3.6.6           
+#> [37] rmarkdown_2.31       crayon_1.5.3         ragg_1.5.2          
+#> [40] otel_0.2.0           httr_1.4.8           reshape2_1.4.5      
+#> [43] tzdb_0.5.0           DBI_1.3.0            cachem_1.1.0        
+#> [46] stringr_1.6.0        AnnotationDbi_1.74.0 BiocManager_1.30.27 
+#> [49] XVector_0.52.0       vctrs_0.7.3          Matrix_1.7-5        
+#> [52] jsonlite_2.0.0       hms_1.1.4            bit64_4.8.2         
+#> [55] ggrepel_0.9.8        systemfonts_1.3.2    jquerylib_0.1.4     
+#> [58] glue_1.8.1           pkgdown_2.2.1        stringi_1.8.7       
+#> [61] gtable_0.3.6         BiocVersion_3.23.1   tibble_3.3.1        
+#> [64] pillar_1.11.1        rappdirs_0.3.4       htmltools_0.5.9     
+#> [67] R6_2.6.1             httr2_1.3.0          textshaping_1.0.5   
+#> [70] lattice_0.22-9       evaluate_1.0.5       readr_2.2.0         
+#> [73] png_0.1-9            memoise_2.0.1        bslib_0.11.0        
+#> [76] Rcpp_1.1.2           SparseArray_1.12.2   xfun_0.60           
+#> [79] fs_2.1.0             pkgconfig_2.0.3
 ```

@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>BREAD: Bayesian region-specific DNA methylation inference • BREAD</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="BREAD: Bayesian region-specific DNA methylation inference">
 <meta name="description" content="BREAD provides targeted Bayesian inference for predefined methylation regions using array-derived data stored in SummarizedExperiment objects. Instead of only returning p-values, BREAD estimates posterior probabilities that each region is hypermethylated or hypomethylated under a contrast of interest.
@@ -68,22 +68,135 @@
 <div class="page-header"><h1 id="bread">BREAD<a class="anchor" aria-label="anchor" href="#bread"></a>
 </h1></div>
 <!-- badges: start -->
-<!-- badges: end -->
-<p>The goal of BREAD is to …</p>
+
+<p><strong>BREAD</strong> (Bayesian Region-specific DNA methylation inference) provides targeted Bayesian inference for <strong>predefined</strong> DNA methylation regions from array data stored in <code>SummarizedExperiment</code> objects. For each region you supply, BREAD fits a Bayesian model, computes the posterior probability of a directional methylation change, and classifies the region as <strong>hypermethylated</strong>, <strong>hypomethylated</strong>, or <strong>inconclusive</strong> at user-configurable effect-size and probability thresholds.</p>
+<p>Unlike genome-wide DMR callers that scan for regions, BREAD answers a different question: <em>given regions I already care about (PRC2 targets, CGIs, LADs, a chromHMM state, a custom BED), what is the posterior evidence for methylation change in each one, and how confident am I?</em> Output is a per-region posterior — effect size, credible interval, and directional probabilities — not just a p-value.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of BREAD like so:</p>
+<p>BREAD is in development. Install the latest version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"BacZemin/BREAD"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># or with remotes:</span></span>
+<span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"BacZemin/BREAD"</span><span class="op">)</span></span></code></pre></div>
+<p>BREAD depends on Bioconductor packages (<code>SummarizedExperiment</code>, <code>GenomicRanges</code>, <code>S4Vectors</code>, <code>GenomeInfoDb</code>). The optional <code>brms</code> backend additionally needs <code>brms</code> + a working Stan toolchain.</p>
 </div>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
+<p>BREAD ships a small packaged dataset so you can run the whole pipeline out of the box: 8 EPICv2 arrays from a fibroblast passage-aging × vitamin C experiment, plus 500 predefined regions spanning five feature classes (PMD, PRC-CGI, bivalent, …).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/BacZemin/BREAD" class="external-link">BREAD</a></span><span class="op">)</span></span>
-<span><span class="co">## basic example code</span></span></code></pre></div>
+<span></span>
+<span><span class="va">se</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"vitc_ag06561.rds"</span>, package <span class="op">=</span> <span class="st">"BREAD"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"vitc_regions.rds"</span>, package <span class="op">=</span> <span class="st">"BREAD"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Which regions change methylation with passage in the control fibroblasts?</span></span>
+<span><span class="va">se_ctrl</span> <span class="op">&lt;-</span> <span class="va">se</span><span class="op">[</span>, <span class="va">se</span><span class="op">$</span><span class="va">condition</span> <span class="op">==</span> <span class="st">"ctrl"</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_bread.html">fit_bread</a></span><span class="op">(</span></span>
+<span>  <span class="va">se_ctrl</span>,</span>
+<span>  features          <span class="op">=</span> <span class="va">reg</span>,</span>
+<span>  design            <span class="op">=</span> <span class="op">~</span> <span class="va">passage</span>,</span>
+<span>  feature_class_col <span class="op">=</span> <span class="st">"feature_class"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span>                     <span class="co"># summary: n regions, backend, classification counts</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/results.html">results</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>     <span class="co"># one row per region</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">classification</span><span class="op">)</span></span>
+<span><span class="co">#&gt; hypermethylated  hypomethylated    inconclusive</span></span>
+<span><span class="co">#&gt;              76              39             385</span></span></code></pre></div>
+<p>That is the whole pattern: a <code>SummarizedExperiment</code> of array data, a <code>GRanges</code> of regions to test, and a model formula referencing columns of <code>colData(se)</code>. <code><a href="reference/fit_bread.html">fit_bread()</a></code> auto-detects the assay and whether values are on the beta or M scale, so the three arguments above are usually all you need. <code>feature_class_col</code> is optional — supply it when your regions carry a grouping column you want summarized.</p>
+<div class="section level3">
+<h3 id="reading-the-results">Reading the results<a class="anchor" aria-label="anchor" href="#reading-the-results"></a>
+</h3>
+<p><code>results(fit)</code> returns one row per region:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>column</th>
+<th>meaning</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>region_id</code></td>
+<td>region identifier</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td>number of probes summarized in the region</td>
+</tr>
+<tr>
+<td><code>mean_effect</code></td>
+<td>posterior mean methylation change (M-scale)</td>
+</tr>
+<tr>
+<td>
+<code>ci_lo</code>, <code>ci_hi</code>
+</td>
+<td>95% credible interval</td>
+</tr>
+<tr>
+<td><code>p_gt_delta</code></td>
+<td>P(effect &gt; +delta) — evidence for hypermethylation</td>
+</tr>
+<tr>
+<td><code>p_lt_neg_delta</code></td>
+<td>P(effect &lt; -delta) — evidence for hypomethylation</td>
+</tr>
+<tr>
+<td><code>classification</code></td>
+<td>
+<code>hypermethylated</code> / <code>hypomethylated</code> / <code>inconclusive</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>A region is called <strong>hypermethylated</strong> if <code>p_gt_delta &gt;= prob_cutoff</code>, <strong>hypomethylated</strong> if <code>p_lt_neg_delta &gt;= prob_cutoff</code>, otherwise <strong>inconclusive</strong>. Defaults are <code>delta = 0.10</code> (M-scale) and <code>prob_cutoff = 0.95</code>; both are arguments to <code><a href="reference/fit_bread.html">fit_bread()</a></code>.</p>
+<p><code>classifications(fit)</code> returns just the per-region calls, and <code>posterior_draws(fit)</code> gives posterior samples for downstream summaries.</p>
+</div>
+<div class="section level3">
+<h3 id="backends">Backends<a class="anchor" aria-label="anchor" href="#backends"></a>
+</h3>
+<ul>
+<li>
+<code>backend = "conjugate"</code> (default) — analytic Normal-Inverse-Gamma posterior, no MCMC. Hundreds of regions fit in well under a second.</li>
+<li>
+<code>backend = "brms"</code> — full MCMC via Stan; compiles once, then reuses the compiled model across regions. Use when you need the flexibility of a full Bayesian fit.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="knowyourcg-enrichment">KnowYourCG enrichment<a class="anchor" aria-label="anchor" href="#knowyourcg-enrichment"></a>
+</h3>
+<p><code><a href="reference/bread_kycg.html">bread_kycg()</a></code> takes the probes in your hyper- or hypo-classified regions and runs <code><a href="https://rdrr.io/pkg/knowYourCG/man/testEnrichment.html" class="external-link">knowYourCG::testEnrichment()</a></code> against curated CpG databases, so you can ask what genomic features your called regions are enriched for.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="vignettes">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes"></a>
+</h2>
+<p>Two worked examples on real data (rendered on the <a href="https://baczemin.github.io/BREAD/">documentation site</a>):</p>
+<ul>
+<li>
+<strong>Getting started</strong> (<code>bread-intro</code>) — TCGA HM450 matched normal/tumour pairs over chromHMM chromatin-state regions, end-to-end through <code><a href="reference/bread_kycg.html">bread_kycg()</a></code>.</li>
+<li>
+<strong>Vitamin C EPICv2</strong> (<code>bread-vitc</code>) — the packaged fibroblast passage-aging × vitamin C experiment, recovering classic PMD-hypo / PRC-CGI-hyper region signatures.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="status">Status<a class="anchor" aria-label="anchor" href="#status"></a>
+</h2>
+<p>Milestone 1 (MVP) is complete: the full <code><a href="reference/fit_bread.html">fit_bread()</a></code> pipeline, conjugate and brms backends, S4 classes with accessors, plotting helpers, KYCG integration, two real-data vignettes, and a live pkgdown site. Partial pooling across regions, feature-class priors, random-effects designs, and contrast vectors are on the roadmap. See <code>NEWS.md</code> for the changelog.</p>
+</div>
+<div class="section level2">
+<h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
+</h2>
+<p>MIT © Jaemin Park. See <code>LICENSE</code>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -118,7 +231,15 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a></li>
+<li><a href="https://github.com/BacZemin/BREAD/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/BacZemin/BREAD/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></li>
+<li><a href="https://baczemin.github.io/BREAD/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Docs"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>
@@ -129,7 +250,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
