@@ -40,8 +40,8 @@ navbar:
 reference:
 - title: "Fit a BREAD model"
   desc: >
-    The main entry point and the two backend fit helpers. Most users only
-    call `fit_bread()`; backend-specific functions are exposed for power users.
+    The main entry point, plus the prior constructor. `fit_bread()` selects
+    and drives the backend; the backend fit helpers themselves are internal.
   contents:
   - fit_bread
   - bread_prior
@@ -83,6 +83,4 @@ articles:
   - bread-vitc
 
 news:
-  releases:
-  - text: "Development (0.0.0.9000)"
-    href: news/index.html
+  cran_dates: false

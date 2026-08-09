@@ -1,0 +1,55 @@
+name: Bug report
+description: Something in BREAD behaves incorrectly or errors unexpectedly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. For **usage questions** ("how do I ...?"), please
+        use the [Bioconductor support site](https://support.bioconductor.org)
+        with the `BREAD` tag instead.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reprex
+    attributes:
+      label: Reproducible example
+      description: >
+        A self-contained [reprex](https://reprex.tidyverse.org/). The packaged
+        example data is a good basis if your own data cannot be shared.
+      value: |
+        ```r
+        library(BREAD)
+        se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+        reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+
+        # your code here
+        ```
+      render: r
+    validations:
+      required: true
+
+  - type: textarea
+    id: data-shape
+    attributes:
+      label: Input structure
+      description: >
+        Output of `assayNames(se)`, `dim(se)`, `colData(se)`, and
+        `length(features)` / `names(mcols(features))`. Most BREAD issues are
+        input-shape issues, so this is usually the fastest route to a fix.
+      render: text
+
+  - type: textarea
+    id: sessioninfo
+    attributes:
+      label: sessionInfo()
+      render: text
+    validations:
+      required: true

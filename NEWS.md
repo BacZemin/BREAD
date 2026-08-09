@@ -1,6 +1,6 @@
-# BREAD 0.0.0.9000 (development)
+# BREAD 0.99.0
 
-Initial MVP — milestone 1.
+First release candidate, prepared for Bioconductor submission.
 
 ## New features
 
@@ -21,10 +21,18 @@ Initial MVP — milestone 1.
   dependency on the MetBrewer package).
 * `BreadFit` / `BreadResults` S4 classes with accessors `results()`,
   `classifications()`, `posterior_draws()`, and `show()`.
+* `BreadResults()` — constructor for the `BreadResults` class, with a
+  `show()` method. The class previously had no way to build one.
+* `posterior_summary()` now accepts a `BreadFit` directly, so callers no
+  longer need to reach into the object's `model` slot.
+* Every exported object now carries a runnable `@examples` block built on
+  the packaged EPICv2 example data.
 
 ## Known scope
 
 * `backend = "cmdstanr"` and `mode = "hierarchical"` are scaffolded with
   "planned for a later release" errors.
+* The unimplemented `report_feature_set()` stub has been removed;
+  `plot_feature_set()` covers the same ground.
 * Both backends fit each region independently (summary mode). Partial
   pooling across regions and class-level priors are deferred to M3.

@@ -1,0 +1,24 @@
+citHeader("To cite BREAD in publications, please use:")
+
+## `meta` is the parsed DESCRIPTION when R loads this file via citation();
+## fall back to the installed version if it is unavailable.
+ver <- if (!is.null(meta$Version)) {
+  meta$Version
+} else {
+  as.character(utils::packageVersion("BREAD"))
+}
+
+bibentry(
+  bibtype  = "Manual",
+  title    = "{BREAD}: Bayesian Region-specific DNA Methylation Inference",
+  author   = person("Jaemin", "Park"),
+  year     = "2026",
+  note     = sprintf("R package version %s", ver),
+  url      = "https://github.com/BacZemin/BREAD",
+  textVersion = sprintf(
+    paste0("Park J (2026). BREAD: Bayesian Region-specific DNA Methylation ",
+           "Inference. R package version %s. ",
+           "https://github.com/BacZemin/BREAD"),
+    ver
+  )
+)
