@@ -175,21 +175,25 @@ random-effects designs, and contrast vectors are on the roadmap. See
 
 ## Citation
 
+BREAD does not have an associated publication yet. For now, cite the
+package itself:
+
 ``` r
 citation("BREAD")
-To cite BREAD in publications, please use:
+To cite package 'BREAD' in publications use:
 
-  Park J (2026). BREAD: Bayesian Region-specific DNA Methylation
-  Inference. R package version 0.99.0.
-  https://github.com/BacZemin/BREAD
+  Park J (2026). _BREAD: Bayesian Region-specific DNA Methylation
+  Inference_. R package version 0.99.0,
+  https://baczemin.github.io/BREAD,
+  <https://github.com/BacZemin/BREAD>.
 
 A BibTeX entry for LaTeX users is
 
   @Manual{,
-    title = {{BREAD}: Bayesian Region-specific DNA Methylation Inference},
+    title = {BREAD: Bayesian Region-specific DNA Methylation Inference},
     author = {Jaemin Park},
     year = {2026},
-    note = {R package version 0.99.0},
+    note = {R package version 0.99.0, https://baczemin.github.io/BREAD},
     url = {https://github.com/BacZemin/BREAD},
   }
 ```

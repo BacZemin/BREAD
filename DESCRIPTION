@@ -1,6 +1,7 @@
 Package: BREAD
 Title: Bayesian Region-specific DNA Methylation Inference
 Version: 0.99.0
+Date: 2026-08-09
 Authors@R: 
     person("Jaemin", "Park", , "jaemin.park@vai.org", role = c("aut", "cre"))
 Description: BREAD provides targeted Bayesian inference for predefined DNA

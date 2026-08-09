@@ -159,6 +159,9 @@ contrast vectors are on the roadmap. See `NEWS.md` for the changelog.
 
 ## Citation
 
+BREAD does not have an associated publication yet. For now, cite the
+package itself:
+
 ```{r citation, comment = ""}
 citation("BREAD")
 ```
