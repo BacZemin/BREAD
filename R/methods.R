@@ -157,11 +157,13 @@ setMethod("show", "BreadFit", function(object) {
       "\n")
   cat("  delta      :", object@params$delta, "\n")
   cat("  prob_cutoff:", object@params$prob_cutoff, "\n")
+  # Count distinct regions, not ranges: `features` may hold many ranges per
+  # region_id, which previously printed as e.g. "788 (of 790 input)" for what
+  # was really 30 regions built from 790 probes.
   cat("  n_regions  :",
-      if (length(object@features) > 0L) length(object@features) else 0L,
+      object@diagnostics$n_features_out %||% 0L,
       "(of ",
-      if (!is.null(object@diagnostics$n_features_in))
-        object@diagnostics$n_features_in else NA,
+      object@diagnostics$n_features_in %||% NA,
       " input)\n")
   res <- object@results
   if (!is.null(res) && "classification" %in% colnames(res)) {

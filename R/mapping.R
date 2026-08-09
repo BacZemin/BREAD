@@ -12,6 +12,11 @@
 #'   non-empty `rowRanges()`.
 #' @param features A [GenomicRanges::GRanges] of regions. If `names(features)`
 #'   is `NULL` or empty, IDs `region_1, region_2, ...` are generated.
+#'   Several ranges may share one name: this is the only way to define a
+#'   region as an exact set of probes, since a single bounding interval would
+#'   sweep in neighbours. Such ranges are collapsed into one region, so
+#'   `length(features)` counts *ranges* while the region counts below count
+#'   distinct IDs.
 #' @param min_probes Integer. Regions with fewer overlapping probes are
 #'   dropped. Default `3L`.
 #'
@@ -20,8 +25,8 @@
 #'   `mcols(features)` columns. Attributes:
 #'   - `dropped_regions` : character vector of region IDs excluded.
 #'   - `min_probes`      : the threshold applied.
-#'   - `n_features_in`   : regions supplied.
-#'   - `n_features_out`  : regions retained.
+#'   - `n_features_in`   : distinct region IDs supplied (not ranges).
+#'   - `n_features_out`  : distinct region IDs retained.
 #'
 #' @importFrom methods is
 #' @importFrom SummarizedExperiment rowRanges
@@ -70,11 +75,13 @@ map_probes_to_features <- function(se, features, min_probes = 3L) {
     probe_ids <- paste0("probe_", seq_along(probes))
   }
 
-  # Region IDs: GRanges names or generated
+  # Region IDs: GRanges names or generated. Several ranges may carry the same
+  # name, in which case they are one region -- count distinct IDs, not ranges.
   region_ids <- names(features)
   if (is.null(region_ids) || any(region_ids == "") || anyNA(region_ids)) {
     region_ids <- paste0("region_", seq_along(features))
   }
+  n_regions_in <- length(unique(region_ids))
 
   # findOverlaps() warns about non-overlapping seqlevels, which is not
   # actionable on its own -- the error below reports them instead.
@@ -120,13 +127,13 @@ map_probes_to_features <- function(se, features, min_probes = 3L) {
   rownames(mapping) <- NULL
 
   if (length(dropped) > 0L) {
-    message("Dropped ", length(dropped), " of ", length(features),
+    message("Dropped ", length(dropped), " of ", n_regions_in,
             " regions with < ", min_probes, " probes.")
   }
 
   attr(mapping, "dropped_regions") <- dropped
   attr(mapping, "min_probes")      <- min_probes
-  attr(mapping, "n_features_in")   <- length(features)
+  attr(mapping, "n_features_in")   <- n_regions_in
   attr(mapping, "n_features_out")  <- length(unique(mapping$region_id))
   mapping
 }

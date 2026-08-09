@@ -52,3 +52,51 @@ test_that("mapping rejects non-positive min_probes", {
   expect_error(map_probes_to_features(se, gr, min_probes = 0L),
                "positive integer")
 })
+
+test_that("several ranges sharing a region_id collapse into one region", {
+  se <- .make_toy_se(); gr <- .make_toy_features_dup()
+  expect_length(gr, 3L)                       # three ranges ...
+  expect_length(unique(names(gr)), 2L)        # ... but two regions
+
+  m <- suppressMessages(map_probes_to_features(se, gr, min_probes = 3L))
+
+  expect_setequal(unique(m$region_id), c("regD", "regE"))
+  # regD spans probes 1-3 and 8-10 across two disjoint ranges
+  expect_equal(sum(m$region_id == "regD"), 6L)
+  expect_true(all(m$n_probes[m$region_id == "regD"] == 6L))
+
+  # Counts are of distinct region IDs, never of ranges. This is the
+  # regression: n_features_in used to report 3 here.
+  expect_equal(attr(m, "n_features_in"),  2L)
+  expect_equal(attr(m, "n_features_out"), 2L)
+})
+
+test_that("dropped_regions is deduplicated and the message counts regions", {
+  se <- .make_toy_se()
+  gr <- .make_toy_features_dup()
+  # Raise the bar so regD (6 probes across 2 ranges) survives but regE (5) does not
+  expect_message(
+    m <- map_probes_to_features(se, gr, min_probes = 6L),
+    "Dropped 1 of 2 regions"
+  )
+  expect_equal(attr(m, "dropped_regions"), "regE")
+
+  # And when the multi-range region itself is dropped, it appears once
+  m2 <- suppressMessages(map_probes_to_features(se, gr, min_probes = 20L))
+  expect_equal(sort(attr(m2, "dropped_regions")), c("regD", "regE"))
+})
+
+test_that("fit diagnostics count regions, not ranges", {
+  se <- .make_toy_se(); gr <- .make_toy_features_dup()
+  fit <- suppressMessages(fit_bread(se, gr, ~ group, min_probes = 3L))
+
+  # The invariant that would have caught "n_regions: 788 (of 790 input)"
+  expect_equal(fit@diagnostics$n_features_out, nrow(results(fit)))
+  expect_equal(fit@diagnostics$n_features_in, 2L)
+
+  # Documented property: the features slot keeps every range of a surviving
+  # region, so it is longer than the results table when IDs repeat.
+  expect_gt(length(fit@features), nrow(results(fit)))
+
+  expect_output(show(fit), "n_regions  : 2 \\(of  2  input\\)")
+})

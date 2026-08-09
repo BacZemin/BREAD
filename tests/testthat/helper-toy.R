@@ -41,6 +41,24 @@
   gr
 }
 
+# Toy features where ONE region is defined by several disjoint ranges sharing
+# a name -- the only way to pin a region to an exact probe set, since a single
+# bounding interval would sweep in the probes between them.
+# regD = probes 1-3 (1..2500) + probes 8-10 (7001..9500) = 6 probes, 2 ranges.
+# regE = probes 16-20, 1 range. So: 2 distinct regions from 3 ranges.
+.make_toy_features_dup <- function() {
+  gr <- GenomicRanges::GRanges(
+    seqnames = "chr1",
+    ranges   = IRanges::IRanges(
+      start = c(     1L,  7001L, 15001L),
+      end   = c(  2500L,  9500L, 20000L)
+    ),
+    feature_class = c("PRC", "PRC", "LAD")
+  )
+  names(gr) <- c("regD", "regD", "regE")
+  gr
+}
+
 # Toy SE with injected signal: regA becomes hyper, regC becomes hypo,
 # in "old" vs "young" under ~ group. Sample size large enough for
 # prob_cutoff = 0.95 classification to recover truth.
