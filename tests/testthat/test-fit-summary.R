@@ -44,10 +44,10 @@ test_that("posterior_summary recovers sign and orders true effects", {
   expect_true(all(post$mean_effect[5:6]  < -0.25))
   expect_true(all(abs(post$mean_effect[1:2]) < 0.25))
   # Probs in [0,1]
-  for (col in c("p_pos","p_neg","p_gt_delta","p_lt_neg_delta"))
+  for (col in c("prob_pos","prob_neg","prob_hyper","prob_hypo"))
     expect_true(all(post[[col]] >= 0 & post[[col]] <= 1))
-  # p_pos + p_neg == 1 (within tolerance)
-  expect_equal(post$p_pos + post$p_neg, rep(1, nrow(post)),
+  # prob_pos + prob_neg == 1 (within tolerance)
+  expect_equal(post$prob_pos + post$prob_neg, rep(1, nrow(post)),
                tolerance = 1e-8)
 })
 

@@ -22,7 +22,7 @@
 #'
 #' @return A `data.frame` with one row per region and columns:
 #'   `region_id`, `n`, `mean_effect`, `median_effect`, `ci_lo`, `ci_hi`,
-#'   `df`, `scale`, `p_pos`, `p_neg`, `p_gt_delta`, `p_lt_neg_delta`, `error`.
+#'   `df`, `scale`, `prob_pos`, `prob_neg`, `prob_hyper`, `prob_hypo`, `error`.
 #'   `df` is `NA_real_` for the empirical path.
 #'
 #' @importFrom stats pt qt median quantile sd
@@ -71,8 +71,8 @@ posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
       mean_effect    = NA_real_, median_effect = NA_real_,
       ci_lo          = NA_real_, ci_hi         = NA_real_,
       df             = NA_real_, scale         = NA_real_,
-      p_pos          = NA_real_, p_neg         = NA_real_,
-      p_gt_delta     = NA_real_, p_lt_neg_delta = NA_real_,
+      prob_pos       = NA_real_, prob_neg  = NA_real_,
+      prob_hyper     = NA_real_, prob_hypo = NA_real_,
       error          = if (is.null(f$error)) NA_character_ else f$error,
       stringsAsFactors = FALSE
     )
@@ -91,10 +91,10 @@ posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
         ci_hi          = q[2L],
         df             = NA_real_,
         scale          = stats::sd(d),
-        p_pos          = mean(d > 0),
-        p_neg          = mean(d < 0),
-        p_gt_delta     = mean(d >  delta),
-        p_lt_neg_delta = mean(d < -delta),
+        prob_pos       = mean(d > 0),
+        prob_neg       = mean(d < 0),
+        prob_hyper     = mean(d >  delta),
+        prob_hypo      = mean(d < -delta),
         error          = NA_character_,
         stringsAsFactors = FALSE
       ))
@@ -109,10 +109,10 @@ posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
     q_lo <- mu + s * stats::qt(alpha,     df = nu)
     q_hi <- mu + s * stats::qt(1 - alpha, df = nu)
 
-    p_pos  <- 1 - stats::pt((0      - mu) / s, df = nu)
-    p_neg  <-     stats::pt((0      - mu) / s, df = nu)
-    p_gt_d <- 1 - stats::pt(( delta - mu) / s, df = nu)
-    p_lt_d <-     stats::pt((-delta - mu) / s, df = nu)
+    prob_pos   <- 1 - stats::pt((0      - mu) / s, df = nu)
+    prob_neg   <-     stats::pt((0      - mu) / s, df = nu)
+    prob_hyper <- 1 - stats::pt(( delta - mu) / s, df = nu)
+    prob_hypo  <-     stats::pt((-delta - mu) / s, df = nu)
 
     data.frame(
       region_id      = rid,
@@ -123,10 +123,10 @@ posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
       ci_hi          = q_hi,
       df             = nu,
       scale          = s,
-      p_pos          = p_pos,
-      p_neg          = p_neg,
-      p_gt_delta     = p_gt_d,
-      p_lt_neg_delta = p_lt_d,
+      prob_pos       = prob_pos,
+      prob_neg       = prob_neg,
+      prob_hyper     = prob_hyper,
+      prob_hypo      = prob_hypo,
       error          = NA_character_,
       stringsAsFactors = FALSE
     )

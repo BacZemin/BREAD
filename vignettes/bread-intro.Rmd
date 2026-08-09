@@ -144,9 +144,9 @@ you want to be stricter or looser.
 
 ```{r results}
 res <- results(fit)
-head(res[order(res$p_gt_delta, decreasing = TRUE),
+head(res[order(res$prob_hyper, decreasing = TRUE),
          c("region_id", "mean_effect", "ci_lo", "ci_hi",
-           "p_gt_delta", "p_lt_neg_delta", "classification")], 5)
+           "prob_hyper", "prob_hypo", "classification")], 5)
 ```
 
 ```{r by-class}
@@ -180,7 +180,7 @@ underlying values. The x-axis preserves the factor order we set on
 
 ```{r one-region, fig.width = 10, fig.height = 4}
 top_hyper <- res[res$classification == "hypermethylated", ]
-top_hyper <- top_hyper[order(top_hyper$p_gt_delta, decreasing = TRUE), ]
+top_hyper <- top_hyper[order(top_hyper$prob_hyper, decreasing = TRUE), ]
 rid <- top_hyper$region_id[1]
 
 p1 <- plot_region_posterior(fit, region_id = rid) +

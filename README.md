@@ -113,8 +113,8 @@ carry a grouping column you want summarized.
 | `n`              | number of probes summarized in the region             |
 | `mean_effect`    | posterior mean methylation change (M-scale)           |
 | `ci_lo`, `ci_hi` | 95% credible interval                                 |
-| `p_gt_delta`     | P(effect \> +delta) — evidence for hypermethylation   |
-| `p_lt_neg_delta` | P(effect \< -delta) — evidence for hypomethylation    |
+| `prob_hyper`     | P(effect \> +delta) — evidence for hypermethylation   |
+| `prob_hypo`      | P(effect \< -delta) — evidence for hypomethylation    |
 | `classification` | `hypermethylated` / `hypomethylated` / `inconclusive` |
 
 ``` r
@@ -129,8 +129,8 @@ head(res[, c("region_id", "n", "mean_effect", "ci_lo", "ci_hi",
 #> 6        Bivalent_090 4  0.0603224027 -0.31407739 0.4347222    inconclusive
 ```
 
-A region is called **hypermethylated** if `p_gt_delta >= prob_cutoff`,
-**hypomethylated** if `p_lt_neg_delta >= prob_cutoff`, otherwise
+A region is called **hypermethylated** if `prob_hyper >= prob_cutoff`,
+**hypomethylated** if `prob_hypo >= prob_cutoff`, otherwise
 **inconclusive**. Defaults are `delta = 0.10` (M-scale) and
 `prob_cutoff = 0.95`; both are arguments to `fit_bread()`.
 

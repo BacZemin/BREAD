@@ -48,7 +48,7 @@ test_that("fit_bread(backend = 'brms') recovers injected signal", {
   res <- results(fit)
   expect_true(is.na(res$df[1L]))  # df undefined for empirical path
   expect_true(all(!is.na(res$mean_effect)))
-  expect_true(all(res$p_pos + res$p_neg >= 0.999))
+  expect_true(all(res$prob_pos + res$prob_neg >= 0.999))
 
   # posterior_draws returns actual MCMC draws (subsampled to n)
   d <- posterior_draws(fit, region_id = "regA", n = 200L, seed = 1L)

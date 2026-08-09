@@ -76,5 +76,5 @@ test_that("the documented example fit runs end to end", {
   res <- results(fit)
   expect_gt(nrow(res), 0L)
   expect_true(all(c("region_id", "classification") %in% colnames(res)))
-  expect_true(any(!is.na(res$p_gt_delta)))
+  expect_true(any(!is.na(res$prob_hyper)))
 })

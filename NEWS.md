@@ -27,6 +27,12 @@ First release candidate, prepared for Bioconductor submission.
   longer need to reach into the object's `model` slot.
 * Every exported object now carries a runnable `@examples` block built on
   the packaged EPICv2 example data.
+* Posterior probability columns in `results()` are named `prob_pos`,
+  `prob_neg`, `prob_hyper` and `prob_hypo` — deliberately not `p_*`, which
+  invites reading them as p-values. They are posterior probabilities of the
+  parameter given the data (`prob_hyper` = P(effect > +delta),
+  `prob_hypo` = P(effect < -delta)), not tail probabilities of a statistic
+  under a null hypothesis.
 
 ## Known scope
 

@@ -3,8 +3,8 @@
 # BreadFit results table both depend on.
 
 POST_COLS <- c("region_id", "n", "mean_effect", "median_effect",
-               "ci_lo", "ci_hi", "df", "scale", "p_pos", "p_neg",
-               "p_gt_delta", "p_lt_neg_delta", "error")
+               "ci_lo", "ci_hi", "df", "scale", "prob_pos", "prob_neg",
+               "prob_hyper", "prob_hypo", "error")
 
 .toy_fit <- function() {
   fit_bread(.make_toy_signal_se(), .make_toy_features(), ~ group)
@@ -33,12 +33,12 @@ test_that("a wider ci widens every interval but moves no point estimate", {
 
 test_that("directional probabilities are coherent", {
   post <- posterior_summary(.toy_fit())
-  ok   <- !is.na(post$p_pos)
-  expect_equal(post$p_pos[ok] + post$p_neg[ok], rep(1, sum(ok)),
+  ok   <- !is.na(post$prob_pos)
+  expect_equal(post$prob_pos[ok] + post$prob_neg[ok], rep(1, sum(ok)),
                tolerance = 1e-8)
-  expect_true(all(post$p_gt_delta[ok]     <= post$p_pos[ok] + 1e-8))
-  expect_true(all(post$p_lt_neg_delta[ok] <= post$p_neg[ok] + 1e-8))
-  for (col in c("p_pos", "p_neg", "p_gt_delta", "p_lt_neg_delta")) {
+  expect_true(all(post$prob_hyper[ok]     <= post$prob_pos[ok] + 1e-8))
+  expect_true(all(post$prob_hypo[ok] <= post$prob_neg[ok] + 1e-8))
+  for (col in c("prob_pos", "prob_neg", "prob_hyper", "prob_hypo")) {
     expect_true(all(post[[col]][ok] >= 0 & post[[col]][ok] <= 1))
   }
 })
@@ -47,9 +47,9 @@ test_that("a larger delta cannot increase the directional probabilities", {
   fit   <- .toy_fit()
   small <- posterior_summary(fit, delta = 0.05)
   large <- posterior_summary(fit, delta = 0.50)
-  ok    <- !is.na(small$p_gt_delta)
-  expect_true(all(large$p_gt_delta[ok]     <= small$p_gt_delta[ok] + 1e-12))
-  expect_true(all(large$p_lt_neg_delta[ok] <= small$p_lt_neg_delta[ok] + 1e-12))
+  ok    <- !is.na(small$prob_hyper)
+  expect_true(all(large$prob_hyper[ok]     <= small$prob_hyper[ok] + 1e-12))
+  expect_true(all(large$prob_hypo[ok] <= small$prob_hypo[ok] + 1e-12))
 })
 
 test_that("delta, ci and contrast are recorded as attributes", {

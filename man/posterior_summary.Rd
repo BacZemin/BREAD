@@ -17,7 +17,7 @@ model list from \code{\link[=fit_bread_summary]{fit_bread_summary()}} / \code{\l
 \value{
 A \code{data.frame} with one row per region and columns:
 \code{region_id}, \code{n}, \code{mean_effect}, \code{median_effect}, \code{ci_lo}, \code{ci_hi},
-\code{df}, \code{scale}, \code{p_pos}, \code{p_neg}, \code{p_gt_delta}, \code{p_lt_neg_delta}, \code{error}.
+\code{df}, \code{scale}, \code{prob_pos}, \code{prob_neg}, \code{prob_hyper}, \code{prob_hypo}, \code{error}.
 \code{df} is \code{NA_real_} for the empirical path.
 }
 \description{

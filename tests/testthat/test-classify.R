@@ -8,8 +8,8 @@
   n <- length(p_gt)
   data.frame(
     region_id      = ids %|NULL|% sprintf("r%02d", seq_len(n)),
-    p_gt_delta     = p_gt,
-    p_lt_neg_delta = p_lt,
+    prob_hyper     = p_gt,
+    prob_hypo = p_lt,
     stringsAsFactors = FALSE
   )
 }

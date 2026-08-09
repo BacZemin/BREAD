@@ -23,8 +23,8 @@ The input \code{data.frame} with an added \code{classification} factor column
 \description{
 Applies the BREAD decision rule to the output of \code{\link[=posterior_summary]{posterior_summary()}}:
 \itemize{
-\item \code{hypermethylated} if \code{p_gt_delta >= prob_cutoff}
-\item \code{hypomethylated}  if \code{p_lt_neg_delta >= prob_cutoff}
+\item \code{hypermethylated} if \code{prob_hyper >= prob_cutoff}
+\item \code{hypomethylated}  if \code{prob_hypo  >= prob_cutoff}
 \item \code{inconclusive}    otherwise
 }
 }

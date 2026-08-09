@@ -1,8 +1,8 @@
 #' Classify regions as hyper / hypo / inconclusive
 #'
 #' Applies the BREAD decision rule to the output of [posterior_summary()]:
-#' - `hypermethylated` if `p_gt_delta >= prob_cutoff`
-#' - `hypomethylated`  if `p_lt_neg_delta >= prob_cutoff`
+#' - `hypermethylated` if `prob_hyper >= prob_cutoff`
+#' - `hypomethylated`  if `prob_hypo  >= prob_cutoff`
 #' - `inconclusive`    otherwise
 #'
 #' In the rare case that both probabilities exceed the cutoff (only possible
@@ -40,7 +40,7 @@ classify_regions <- function(post, delta = 0.10, prob_cutoff = 0.95) {
     stop("`post` must be a data.frame from posterior_summary().",
          call. = FALSE)
   }
-  req <- c("p_gt_delta", "p_lt_neg_delta")
+  req <- c("prob_hyper", "prob_hypo")
   missing_cols <- setdiff(req, colnames(post))
   if (length(missing_cols) > 0L) {
     stop("`post` missing required columns: ",
@@ -52,8 +52,8 @@ classify_regions <- function(post, delta = 0.10, prob_cutoff = 0.95) {
     stop("`prob_cutoff` must be in (0, 1).", call. = FALSE)
   }
 
-  hyper <- !is.na(post$p_gt_delta)     & post$p_gt_delta     >= prob_cutoff
-  hypo  <- !is.na(post$p_lt_neg_delta) & post$p_lt_neg_delta >= prob_cutoff
+  hyper <- !is.na(post$prob_hyper) & post$prob_hyper >= prob_cutoff
+  hypo  <- !is.na(post$prob_hypo)  & post$prob_hypo  >= prob_cutoff
 
   cls <- rep("inconclusive", nrow(post))
   cls[hyper] <- "hypermethylated"
@@ -61,13 +61,13 @@ classify_regions <- function(post, delta = 0.10, prob_cutoff = 0.95) {
 
   both <- hyper & hypo
   if (any(both)) {
-    favor_hyper <- both & post$p_gt_delta >= post$p_lt_neg_delta
+    favor_hyper <- both & post$prob_hyper >= post$prob_hypo
     cls[favor_hyper]           <- "hypermethylated"
     cls[both & !favor_hyper]   <- "hypomethylated"
   }
 
   # NA rows (failed fits) stay inconclusive
-  cls[is.na(post$p_gt_delta) | is.na(post$p_lt_neg_delta)] <- "inconclusive"
+  cls[is.na(post$prob_hyper) | is.na(post$prob_hypo)] <- "inconclusive"
 
   post$classification <- factor(
     cls,
