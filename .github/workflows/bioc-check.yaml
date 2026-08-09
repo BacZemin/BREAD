@@ -74,7 +74,22 @@ jobs:
         shell: Rscript {0}
         run: |
           tarball <- dir(".", pattern = "tar\\.gz$", full.names = TRUE)[1]
-          BiocCheck::BiocCheck(tarball, `new-package` = TRUE)
+          res <- BiocCheck::BiocCheck(tarball, `new-package` = TRUE)
+          n_err  <- length(res$error)
+          n_warn <- length(res$warning)
+          cat(sprintf("\nBiocCheck: %d ERROR / %d WARNING / %d NOTE\n",
+                      n_err, n_warn, length(res$note)))
+          # Two findings cannot be resolved in code:
+          #   ERROR   - maintainer not yet registered on the Bioconductor
+          #             support site (a human account action)
+          #   WARNING - the package name collides case-insensitively with the
+          #             unrelated CRAN package 'bread'; resolving it means
+          #             renaming BREAD, which is a maintainer decision.
+          # Anything beyond those two is a regression and fails the build.
+          if (n_err > 1L || n_warn > 1L) {
+            stop("BiocCheck regression: expected at most 1 ERROR / 1 WARNING, ",
+                 "both known and documented in the PR.")
+          }
 
       - name: Upload check logs
         if: always()

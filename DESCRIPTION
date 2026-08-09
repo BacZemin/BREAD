@@ -9,7 +9,10 @@ Description: BREAD provides targeted Bayesian inference for predefined DNA
     computes posterior probabilities of directional methylation change,
     and classifies regions as hypermethylated, hypomethylated, or
     inconclusive at user-configurable effect-size and probability
-    thresholds.
+    thresholds. Both an analytic conjugate backend and a full MCMC
+    backend via 'brms' are provided, sharing the same posterior and
+    classification path. Results can be passed to 'knowYourCG' for
+    enrichment testing against curated CpG feature databases.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends:

@@ -1,24 +1,21 @@
 citHeader("To cite BREAD in publications, please use:")
 
-## `meta` is the parsed DESCRIPTION when R loads this file via citation();
-## fall back to the installed version if it is unavailable.
-ver <- if (!is.null(meta$Version)) {
-  meta$Version
-} else {
-  as.character(utils::packageVersion("BREAD"))
-}
+## `meta` is the parsed DESCRIPTION when citation() loads this file. The
+## literal fallback matters: BiocCheck validates this file with
+## readCitationFile(meta = NULL) against an *uninstalled* package, so anything
+## that reaches for packageVersion("BREAD") here fails.
+ver <- if (!is.null(meta$Version)) meta$Version else "0.99.0"
 
 bibentry(
   bibtype  = "Manual",
   title    = "{BREAD}: Bayesian Region-specific DNA Methylation Inference",
   author   = person("Jaemin", "Park"),
   year     = "2026",
-  note     = sprintf("R package version %s", ver),
+  note     = paste("R package version", ver),
   url      = "https://github.com/BacZemin/BREAD",
-  textVersion = sprintf(
-    paste0("Park J (2026). BREAD: Bayesian Region-specific DNA Methylation ",
-           "Inference. R package version %s. ",
-           "https://github.com/BacZemin/BREAD"),
-    ver
+  textVersion = paste0(
+    "Park J (2026). BREAD: Bayesian Region-specific DNA Methylation ",
+    "Inference. R package version ", ver, ". ",
+    "https://github.com/BacZemin/BREAD"
   )
 )
