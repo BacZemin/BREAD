@@ -1,7 +1,14 @@
-# Slow: Stan compile + sampling. ~60s on HPC. Skipped on CRAN, on systems
-# without brms, and when $_R_CHECK_FORCE_SUGGESTS_ is FALSE and brms missing.
+# Slow: Stan compile + sampling. ~60s on HPC. Skipped on CRAN, on CI, and
+# on systems without a working brms/rstan Stan toolchain.
 test_that("fit_bread(backend = 'brms') recovers injected signal", {
   skip_on_cran()
+  # skip_on_ci() is load-bearing and not redundant with the guards below:
+  # GitHub runners install brms and rstan happily but lack the headers Stan
+  # needs to compile a model (RcppEigen), so the test cleared every
+  # skip_if_not_installed() and then died with "Eigen not found".
+  # Installing a full Stan toolchain per CI run costs ~10 min and is flaky.
+  # The test still runs on the HPC and anywhere CI is unset.
+  skip_on_ci()
   skip_if_not_installed("brms")
   skip_if_not_installed("rstan")
 
