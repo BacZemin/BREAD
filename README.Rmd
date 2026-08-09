@@ -140,10 +140,23 @@ probabilities partition the posterior, so at any sensible cutoff exactly one
 can apply. Defaults are `delta = 0.10` (M-scale), `prob_cutoff = 0.95`, and
 `rope_cutoff = prob_cutoff`.
 
-`rope_cutoff` is separate for a reason: concluding equivalence requires the
+`rope_cutoff` is separate for a reason, and the example above demonstrates it:
+**zero** regions are called `unchanged`. Concluding equivalence requires the
 whole posterior to fit inside ±`delta`, which is far stricter than a
-directional call. At small n you will often want to relax it on its own,
-without also loosening the bar for discovery.
+directional call, and this packaged dataset has too few samples to certify
+anything as flat:
+
+```{r rope-distribution}
+summary(res$prob_rope)
+```
+
+Those 385 `inconclusive` regions are genuinely *unresolved* — BREAD can
+neither detect a `delta = 0.10` effect nor exclude one. That is a more
+specific statement than a non-significant q-value, which looks the same
+whether the region is flat or the study is underpowered. A shared cutoff
+would make the equivalence class unreachable exactly where it is most
+wanted, so relax `rope_cutoff` on its own when you want to see the
+gradient — without loosening the bar for discovery.
 
 `classifications(fit)` returns just the per-region calls, and
 `posterior_draws(fit)` gives posterior samples for downstream summaries.
