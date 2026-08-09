@@ -4,18 +4,28 @@
 #' slots that downstream packages can depend on.
 #'
 #' @slot call The original `fit_bread()` call.
-#' @slot params List of parameters used (delta, prob_cutoff, summary_fun,
-#'   mode, backend, contrast, min_probes, feature_class_col, iter, chains,
-#'   cores, seed).
+#' @slot params List of parameters used (contrast, delta, prob_cutoff,
+#'   rope_cutoff, ci, ref_beta, summary_fun, backend, min_probes,
+#'   feature_class_col).
 #' @slot mode `"summary"` or `"hierarchical"`.
 #' @slot assay_name Assay name used from `se`.
 #' @slot input_scale `"M"` or `"Beta"`.
 #' @slot mapping Probe-to-region data frame from [map_probes_to_features()].
-#' @slot features `GRanges` of regions that survived `min_probes` filtering.
-#' @slot model Internal fit object from [fit_bread_summary()].
+#' @slot features `GRanges` of the ranges belonging to regions that survived
+#'   `min_probes` filtering. When several ranges share a `region_id` this is
+#'   longer than `nrow(results(fit))`; `diagnostics$n_features_out` is the
+#'   region count.
+#' @slot model Internal fit object from [fit_bread_summary()] or
+#'   [fit_bread_brms()]. Both backends return the same named list:
+#'   `fits`, `design_matrix`, `coef_names`, `contrast`, `contrast_idx`,
+#'   `region_ids`, `prior`, `region_mat`, `design`, `coldata`. This shape is
+#'   relied on by [refit_bread()], [posterior_summary()] and
+#'   [plot_region_data()]; treat it as part of the interface.
 #' @slot posterior Per-region posterior summary data frame.
 #' @slot results Per-region data frame with classification column.
-#' @slot diagnostics List with backend, seed, feature counts, failure counts.
+#' @slot diagnostics List with backend, feature counts, dropped regions,
+#'   failure counts, timestamp, and `refit_of` when produced by
+#'   [refit_bread()].
 #'
 #' @name BreadFit
 #' @aliases BreadFit-class

@@ -15,7 +15,10 @@
   cd <- S4Vectors::DataFrame(
     group = factor(rep(c("young", "old"), length.out = n_samples),
                    levels = c("young", "old")),
-    sex   = factor(rep(c("F", "M"),       length.out = n_samples),
+    # Period 4 against group's period 2, so `~ group + sex` is full rank.
+    # (When both alternated, the two were perfectly collinear and any design
+    # using both silently fell back on the prior.)
+    sex   = factor(rep(c("F", "F", "M", "M"), length.out = n_samples),
                    levels = c("F", "M")),
     row.names = colnames(m)
   )

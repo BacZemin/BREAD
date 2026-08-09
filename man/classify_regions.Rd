@@ -2,9 +2,14 @@
 % Please edit documentation in R/classify.R
 \name{classify_regions}
 \alias{classify_regions}
-\title{Classify regions as hyper / hypo / inconclusive}
+\title{Classify regions as hyper / hypo / unchanged / inconclusive}
 \usage{
-classify_regions(post, delta = 0.1, prob_cutoff = 0.95)
+classify_regions(
+  post,
+  delta = 0.1,
+  prob_cutoff = 0.95,
+  rope_cutoff = prob_cutoff
+)
 }
 \arguments{
 \item{post}{Output of \code{\link[=posterior_summary]{posterior_summary()}}.}
@@ -13,26 +18,53 @@ classify_regions(post, delta = 0.1, prob_cutoff = 0.95)
 as an attribute; does not re-evaluate the posterior probabilities (those
 must have been computed at this same \code{delta} upstream).}
 
-\item{prob_cutoff}{Posterior probability cutoff. Default \code{0.95}.}
+\item{prob_cutoff}{Posterior probability cutoff for a \emph{directional} call.
+Default \code{0.95}.}
+
+\item{rope_cutoff}{Posterior probability cutoff for an \emph{equivalence} call.
+Defaults to \code{prob_cutoff}. Worth setting independently: concluding
+equivalence requires the posterior to fit entirely inside
+\eqn{[-\delta, +\delta]}, a far stricter demand than a directional call,
+and at small n almost nothing reaches 0.95. Loosening it should not
+require loosening the discovery threshold too.}
 }
 \value{
 The input \code{data.frame} with an added \code{classification} factor column
-(levels: \code{hypermethylated}, \code{hypomethylated}, \code{inconclusive}). Attributes
-\code{delta} and \code{prob_cutoff} are updated.
+(levels: \code{hypermethylated}, \code{hypomethylated}, \code{unchanged},
+\code{inconclusive}). Attributes \code{delta}, \code{prob_cutoff} and \code{rope_cutoff} are
+updated. If \code{post} has no \code{prob_rope} column it is derived as
+\code{1 - prob_hyper - prob_hypo}.
 }
 \description{
 Applies the BREAD decision rule to the output of \code{\link[=posterior_summary]{posterior_summary()}}:
 \itemize{
 \item \code{hypermethylated} if \code{prob_hyper >= prob_cutoff}
 \item \code{hypomethylated}  if \code{prob_hypo  >= prob_cutoff}
+\item \code{unchanged}       if \code{prob_rope  >= rope_cutoff}
 \item \code{inconclusive}    otherwise
 }
 }
-\details{
-In the rare case that both probabilities exceed the cutoff (only possible
-for very low \code{prob_cutoff}), the region is assigned to whichever side has
-the larger posterior probability.
+\section{Why \code{unchanged} is a separate class}{
+
+\code{inconclusive} used to absorb two entirely different situations: a region
+whose posterior sits tightly inside the region of practical equivalence
+(strong evidence of \emph{no} change) and a region whose posterior is so diffuse
+that nothing can be said. Collapsing them discards the one claim a p-value
+structurally cannot make — that a region is \emph{demonstrably} unmoved at the
+stated \code{delta}. \code{unchanged} means "practically unchanged at this \code{delta}",
+not "identical"; \code{inconclusive} now means only what its name says.
 }
+
+\section{Mutual exclusivity}{
+
+\code{prob_hyper}, \code{prob_hypo} and \code{prob_rope} partition the posterior, so they
+sum to 1. Two of them can therefore clear their thresholds simultaneously
+only if the two thresholds sum to no more than 1 — impossible at any
+sensible setting (0.95 + 0.95 > 1). Should you set thresholds that low, the
+largest of the qualifying probabilities wins, with ties resolved
+hyper > hypo > unchanged.
+}
+
 \examples{
 suppressPackageStartupMessages(library(SummarizedExperiment))
 
@@ -48,4 +80,7 @@ table(cl$classification)
 
 # A stricter cutoff moves borderline regions into `inconclusive`
 table(classify_regions(post, prob_cutoff = 0.99)$classification)
+
+# Relax only the equivalence bar, leaving discovery untouched
+table(classify_regions(post, rope_cutoff = 0.80)$classification)
 }

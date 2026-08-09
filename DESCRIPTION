@@ -43,6 +43,7 @@ Imports:
     S4Vectors,
     stats,
     SummarizedExperiment,
+    utils,
     withr
 biocViews: DNAMethylation, Bayesian, Epigenetics, DifferentialMethylation,
     MethylationArray, Classification

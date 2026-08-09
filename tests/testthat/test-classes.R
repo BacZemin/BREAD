@@ -39,3 +39,18 @@ test_that("BreadResults() rejects non-BreadFit input", {
   expect_error(BreadResults(data.frame(x = 1)), "must be a BreadFit")
   expect_error(BreadResults(NULL), "must be a BreadFit")
 })
+
+test_that("the model list shape is a stable contract", {
+  # refit_bread(), posterior_summary() and plot_region_data() all reach into
+  # these names. Pin them so a backend refactor cannot quietly break them.
+  fit <- suppressMessages(
+    fit_bread(.make_toy_signal_se(), .make_toy_features(), ~ group)
+  )
+  expect_identical(
+    names(fit@model),
+    c("fits", "design_matrix", "coef_names", "contrast", "contrast_idx",
+      "region_ids", "prior", "region_mat", "design", "coldata")
+  )
+  expect_true(is.matrix(fit@model$region_mat))
+  expect_identical(rownames(fit@model$region_mat), fit@model$region_ids)
+})

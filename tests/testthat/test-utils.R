@@ -43,9 +43,10 @@ test_that("assay-name detection follows the documented priority", {
 
 test_that("bread_colors() returns the documented shapes", {
   cl <- bread_colors("classification")
-  expect_length(cl, 3L)
+  expect_length(cl, 4L)
   expect_identical(names(cl),
-                   c("hypermethylated", "hypomethylated", "inconclusive"))
+                   c("hypermethylated", "hypomethylated",
+                     "unchanged", "inconclusive"))
 
   grp <- bread_colors("group")
   expect_length(grp, 2L)

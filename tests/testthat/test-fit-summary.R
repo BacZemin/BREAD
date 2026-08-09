@@ -52,13 +52,19 @@ test_that("posterior_summary recovers sign and orders true effects", {
 })
 
 test_that("classify_regions recovers truth with strong signal", {
+  # The ROPE call needs the whole posterior inside +/- delta, which is a much
+  # tighter demand than a directional call. At the original sigma = 0.2 the
+  # contrast SE was ~0.052 and a true null landed on prob_rope ~0.948, two
+  # thousandths under the cutoff -- a coin flip. sigma = 0.08 puts the SE at
+  # ~0.021, so even a null that happens to sit 2 SE off zero still carries
+  # >0.99 of its mass inside the ROPE.
   sim <- .sim_region_mat(
     n_samples  = 60L,
     true_betas = c(rep(0, 3),         # nulls
                    rep(0.8, 3),       # hyper
                    rep(-0.8, 3),      # hypo
                    rep(0.02, 3)),     # weak (below delta)
-    seed = 42L, sigma = 0.2
+    seed = 42L, sigma = 0.08
   )
   fit  <- fit_bread_summary(sim$mat, sim$coldata,
                             design = ~ group, contrast = "groupold")
@@ -66,10 +72,12 @@ test_that("classify_regions recovers truth with strong signal", {
   cls  <- classify_regions(post, delta = 0.10, prob_cutoff = 0.95)
 
   got <- as.character(cls$classification)
-  expect_true(all(got[1:3]   == "inconclusive"),     info = paste(got[1:3],  collapse=","))
+  # The nulls and the sub-delta regions were always *scientifically*
+  # unchanged; calling them `inconclusive` was the defect this class fixes.
+  expect_true(all(got[1:3]   == "unchanged"),        info = paste(got[1:3],  collapse=","))
   expect_true(all(got[4:6]   == "hypermethylated"),  info = paste(got[4:6],  collapse=","))
   expect_true(all(got[7:9]   == "hypomethylated"),   info = paste(got[7:9],  collapse=","))
-  expect_true(all(got[10:12] == "inconclusive"),     info = paste(got[10:12],collapse=","))
+  expect_true(all(got[10:12] == "unchanged"),        info = paste(got[10:12],collapse=","))
   expect_identical(attr(cls, "delta"), 0.10)
   expect_identical(attr(cls, "prob_cutoff"), 0.95)
 })

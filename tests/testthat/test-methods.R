@@ -19,7 +19,7 @@ test_that("classifications() names line up with results() region ids", {
   expect_identical(names(cls), as.character(res$region_id))
   expect_identical(unname(cls), as.character(res$classification))
   expect_true(all(cls %in% c("hypermethylated", "hypomethylated",
-                             "inconclusive")))
+                             "unchanged", "inconclusive")))
 })
 
 test_that("posterior_draws() is reproducible for a fixed seed", {

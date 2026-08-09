@@ -50,7 +50,16 @@
 #' head(enr[enr$FDR < 0.01, ])
 #' }
 #'
+#' @param mtc_by_group Correct for multiple testing within each knowledgebase
+#'   group rather than across all of them. Passed to
+#'   `knowYourCG::testEnrichment()` when the installed version supports it
+#'   (added after Bioconductor 3.20) and ignored with a message when it does
+#'   not.
+#' @param mtc_method Multiple-testing correction method, as for
+#'   [stats::p.adjust()]. Same version caveat as `mtc_by_group`.
+#'
 #' @importFrom methods is
+#' @importFrom utils packageVersion
 #' @export
 bread_kycg <- function(fit,
                        which        = c("hypermethylated", "hypomethylated"),
@@ -58,7 +67,9 @@ bread_kycg <- function(fit,
                        platform     = c("EPIC", "EPICv2", "HM450", "MM285"),
                        universe     = NULL,
                        alternative  = "greater",
-                       include_genes = FALSE) {
+                       include_genes = FALSE,
+                       mtc_by_group = TRUE,
+                       mtc_method   = "fdr") {
   if (!methods::is(fit, "BreadFit"))
     stop("`fit` must be a BreadFit.", call. = FALSE)
   if (!requireNamespace("knowYourCG", quietly = TRUE))
@@ -88,49 +99,107 @@ bread_kycg <- function(fit,
   if (is.null(universe))
     universe <- unique(as.character(mapping$probe_id))
 
-  # Default DB selection by platform — TFBS + chromHMM + CGI
+  # Default DB selection by platform
   dbs <- databases
   if (is.null(dbs)) {
-    groups <- knowYourCG::listDBGroups()
-    want   <- paste0("^KYCG\\.", platform, "\\.",
-                     "(TFBS|ChromHMM|chromHMM|CGI)", "\\.")
-    dbs <- groups$Title[grepl(want, groups$Title)]
+    groups <- tryCatch(knowYourCG::listDBGroups(),
+                       error = function(e) {
+                         stop("knowYourCG::listDBGroups() failed (it reaches ",
+                              "ExperimentHub): ", conditionMessage(e),
+                              "\nPass `databases = ` to work offline.",
+                              call. = FALSE)
+                       })
+    dbs <- .kycg_default_dbs(platform, groups$Title)
     if (length(dbs) == 0L) {
-      message("bread_kycg(): no default KYCG databases found for platform '",
-              platform, "'; pass `databases = ...` explicitly.")
+      avail <- grep(paste0("^KYCG\\.", platform, "\\."), groups$Title,
+                    value = TRUE)
+      warning("bread_kycg(): no default KYCG groups matched platform '",
+              platform, "'. ",
+              if (length(avail))
+                paste0("Available for this platform:\n  ",
+                       paste(avail, collapse = "\n  "), "\n")
+              else "No groups at all are registered for this platform. ",
+              "Pass `databases = ` explicitly.", call. = FALSE)
       return(data.frame())
     }
   }
 
   # One enrichment run per requested classification level
-  do.call(rbind, lapply(which_levels, function(lvl) {
+  parts <- lapply(which_levels, function(lvl) {
     rids <- as.character(res$region_id[res$classification == lvl])
     pids <- unique(as.character(mapping$probe_id[mapping$region_id %in% rids]))
-    if (length(pids) == 0L) {
-      return(data.frame(query = lvl, n_query = 0L,
-                        stringsAsFactors = FALSE))
+    if (length(pids) == 0L) return(NULL)
+
+    args <- list(
+      query         = pids,
+      databases     = dbs,
+      universe      = universe,
+      alternative   = alternative,
+      include_genes = include_genes,
+      platform      = platform,
+      silent        = TRUE,
+      mtc_by_group  = mtc_by_group,
+      mtc_method    = mtc_method
+    )
+    # knowYourCG gained mtc_by_group / mtc_method after Bioc 3.20. Filter
+    # against the installed signature rather than testing a version number:
+    # BREAD is developed against one release and CI runs against devel.
+    keep <- names(args) %in% names(formals(knowYourCG::testEnrichment))
+    if (!all(keep) && (!missing(mtc_by_group) || !missing(mtc_method))) {
+      message("bread_kycg(): knowYourCG ", utils::packageVersion("knowYourCG"),
+              " has no ", paste(names(args)[!keep], collapse = ", "),
+              " argument; ignoring.")
     }
+
     enr <- tryCatch(
-      knowYourCG::testEnrichment(
-        query         = pids,
-        databases     = dbs,
-        universe      = universe,
-        alternative   = alternative,
-        include_genes = include_genes,
-        platform      = platform,
-        silent        = TRUE
-      ),
+      do.call(knowYourCG::testEnrichment, args[keep]),
       error = function(e) {
         warning("knowYourCG::testEnrichment failed for '", lvl, "': ",
                 conditionMessage(e), call. = FALSE)
         NULL
       }
     )
-    if (is.null(enr) || nrow(enr) == 0L)
-      return(data.frame(query = lvl, n_query = length(pids),
-                        stringsAsFactors = FALSE))
+    if (is.null(enr) || nrow(enr) == 0L) return(NULL)
     enr$query   <- lvl
     enr$n_query <- length(pids)
     enr
-  }))
+  })
+
+  # Drop empties before rbind: a level with no probes used to contribute a
+  # 2-column stub, which rbind refuses to combine with a real result table.
+  parts <- Filter(Negate(is.null), parts)
+  if (length(parts) == 0L) {
+    warning("bread_kycg(): no classification level in `which` yielded any ",
+            "probes to test. Requested: ",
+            paste(shQuote(which_levels), collapse = ", "), ".",
+            call. = FALSE)
+    return(data.frame())
+  }
+  out <- do.call(rbind, parts)
+  rownames(out) <- NULL
+  out
+}
+
+# Default knowledgebase groups per platform, as name fragments matched right
+# after "KYCG.<platform>.". Deliberately no trailing "\\.": the real MM285
+# titles are KYCG.MM285.TFBSconsensus.20220116 and
+# KYCG.MM285.HMconsensus.20220116, which an anchored "TFBS\\." cannot match --
+# that is why mouse users silently got an empty data.frame.
+#
+# Technical annotations (Mask, chromosome, probeType, seqContext) are excluded
+# on purpose: enrichment against them is not biologically interpretable.
+.KYCG_DEFAULT_GROUPS <- list(
+  EPIC   = c("TFBS", "ChromHMM", "chromHMM", "CGI"),
+  EPICv2 = c("TFBS", "ChromHMM", "chromHMM", "CGI"),
+  HM450  = c("TFBS", "ChromHMM", "chromHMM", "CGI"),
+  MM285  = c("chromHMM", "TFBSconsensus", "HMconsensus",
+             "designGroup", "tissueSignature", "metagene")
+)
+
+.kycg_default_dbs <- function(platform, titles) {
+  frags <- .KYCG_DEFAULT_GROUPS[[platform]]
+  if (is.null(frags) || length(titles) == 0L) return(character(0L))
+  want <- paste0("^KYCG\\.", platform, "\\.(",
+                 paste(frags, collapse = "|"), ")")
+  titles[grepl(want, titles)]
 }

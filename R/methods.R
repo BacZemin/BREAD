@@ -157,6 +157,8 @@ setMethod("show", "BreadFit", function(object) {
       "\n")
   cat("  delta      :", object@params$delta, "\n")
   cat("  prob_cutoff:", object@params$prob_cutoff, "\n")
+  cat("  rope_cutoff:", object@params$rope_cutoff %||% object@params$prob_cutoff, "\n")
+  cat("  ci         :", object@params$ci %||% 0.95, "\n")
   # Count distinct regions, not ranges: `features` may hold many ranges per
   # region_id, which previously printed as e.g. "788 (of 790 input)" for what
   # was really 30 regions built from 790 probes.

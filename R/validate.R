@@ -80,29 +80,52 @@ validate_bread_input <- function(se,
          call. = FALSE)
   }
 
-  # Design variables must live in colData
-  cd <- SummarizedExperiment::colData(se)
-  dvars <- all.vars(design)
-  missing_vars <- setdiff(dvars, colnames(cd))
+  .validate_design_contrast(SummarizedExperiment::colData(se),
+                            design, contrast)
+
+  invisible(TRUE)
+}
+
+# Shared by validate_bread_input() and refit_bread(): the design variables
+# must exist in the sample metadata, the model matrix must be buildable, and
+# the contrast (when given) must be one of its coefficients.
+#
+# Also warns on a rank-deficient design. This is not cosmetic: the conjugate
+# backend adds Lambda0 = 0.01 * I before the Cholesky, so a collinear design
+# does not fail -- it silently returns a prior-regularised estimate that looks
+# like a real fit. Permutation studies hit this routinely, and every caller
+# so far has had to hand-roll its own qr() guard.
+.validate_design_contrast <- function(coldata, design, contrast = NULL) {
+  if (!inherits(design, "formula")) {
+    stop("`design` must be a formula (e.g. `~ group + sex`), not <",
+         class(design)[1], ">.", call. = FALSE)
+  }
+  if (length(design) != 2L) {
+    stop("`design` must be one-sided (e.g. `~ group`, not `y ~ group`). ",
+         "BREAD supplies the response internally.", call. = FALSE)
+  }
+
+  cd <- as.data.frame(coldata)
+  missing_vars <- setdiff(all.vars(design), colnames(cd))
   if (length(missing_vars) > 0L) {
     stop("Variables in `design` not found in `colData(se)`: ",
          paste(shQuote(missing_vars), collapse = ", "), ".",
          call. = FALSE)
   }
 
-  # Contrast, if given, must match a design coefficient
+  mm <- tryCatch(
+    stats::model.matrix(design, data = cd),
+    error = function(e) NULL
+  )
+  if (is.null(mm)) {
+    stop("Could not build a model matrix from `design` and `colData(se)`. ",
+         "Check for NAs or singularities in the design variables.",
+         call. = FALSE)
+  }
+
   if (!is.null(contrast)) {
     if (!is.character(contrast) || length(contrast) != 1L || is.na(contrast)) {
       stop("`contrast` must currently be a single character coefficient name (v1).",
-           call. = FALSE)
-    }
-    mm <- tryCatch(
-      stats::model.matrix(design, data = as.data.frame(cd)),
-      error = function(e) NULL
-    )
-    if (is.null(mm)) {
-      stop("Could not build a model matrix from `design` and `colData(se)`. ",
-           "Check for NAs or singularities in the design variables.",
            call. = FALSE)
     }
     if (!contrast %in% colnames(mm)) {
@@ -112,5 +135,15 @@ validate_bread_input <- function(se,
     }
   }
 
-  invisible(TRUE)
+  rk <- tryCatch(qr(mm)$rank, error = function(e) NA_integer_)
+  if (!is.na(rk) && rk < ncol(mm)) {
+    warning("Design matrix is rank deficient (rank ", rk, " < ", ncol(mm),
+            " coefficients). The conjugate prior will absorb the deficiency ",
+            "rather than error, so estimates for the collinear coefficients ",
+            "are prior-driven. Columns: ",
+            paste(shQuote(colnames(mm)), collapse = ", "), ".",
+            call. = FALSE)
+  }
+
+  invisible(mm)
 }

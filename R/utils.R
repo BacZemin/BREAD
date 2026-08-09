@@ -41,11 +41,15 @@ NULL
   "#122451"   # deep navy
 )
 
-# Classification palette (warm = hyper gain, cool = hypo loss, neutral = inconclusive)
+# Classification palette. Warm = hyper gain, cool = hypo loss, olive =
+# a confident no-change call, grey = no information. `unchanged` keeps a
+# saturated colour because it is a finding; `inconclusive` is deliberately
+# desaturated because the absence of information should look like it.
 .col_classification <- c(
   hypermethylated = "#ce4441",
   hypomethylated  = "#004f63",
-  inconclusive    = "#859b6c"
+  unchanged       = "#859b6c",
+  inconclusive    = "#BFBFBF"
 )
 
 # Binary group palette — used by plot_region_data() for the contrast variable
@@ -58,7 +62,8 @@ NULL
 #' dependency on the `MetBrewer` package.
 #'
 #' @param which One of:
-#'   - `"classification"` : named 3-vector for hyper/hypo/inconclusive
+#'   - `"classification"` : named 4-vector for
+#'     hyper / hypo / unchanged / inconclusive
 #'   - `"group"`          : unnamed 2-vector for binary contrast plots
 #'   - `"cross"`          : full 9-color palette
 #'

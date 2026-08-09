@@ -15,15 +15,42 @@
 #'
 #' Columns in the returned data frame are the same in both cases.
 #'
+#' @section Equivalence (`prob_rope`):
+#' `prob_hyper`, `prob_hypo` and `prob_rope` are mutually exclusive and
+#' exhaustive: they are the posterior mass above `+delta`, below `-delta`, and
+#' inside the region of practical equivalence \eqn{[-\delta, +\delta]}, and
+#' they sum to 1. `prob_rope` is what lets BREAD state that a region is
+#' *confidently unchanged* rather than merely undetected — a claim no p-value
+#' can make. See [classify_regions()].
+#'
+#' @section Beta-scale columns:
+#' BREAD models M-values, but reports a beta-scale translation of the effect
+#' and the ROPE half-width via the local linearisation
+#' \eqn{d\beta \approx dM \cdot \beta(1-\beta)\ln 2}, anchored per region at
+#' `ref_beta`. By default `ref_beta` is the region's own mean methylation,
+#' back-transformed from the mean M-value — well defined for every design and
+#' contrast type, unlike the reference level of a factor. The same multiplier
+#' is applied to the effect, both interval bounds and `delta`, so the
+#' beta-scale comparison can never contradict the M-scale classification
+#' beside it. See [bread_delta_beta()].
+#'
 #' @param fit A [BreadFit] (as returned by [fit_bread()]), or the internal
 #'   model list from [fit_bread_summary()] / [fit_bread_brms()].
 #' @param delta Effect-size threshold on the M-value scale. Default `0.10`.
 #' @param ci Credible-interval mass. Default `0.95`.
+#' @param ref_beta Reference methylation level for the beta-scale columns.
+#'   `NULL` (default) derives it per region from the fitted region matrix.
+#'   Otherwise a single value applied to every region, or a numeric vector
+#'   named by `region_id`. Values must lie in (0, 1).
 #'
 #' @return A `data.frame` with one row per region and columns:
 #'   `region_id`, `n`, `mean_effect`, `median_effect`, `ci_lo`, `ci_hi`,
-#'   `df`, `scale`, `prob_pos`, `prob_neg`, `prob_hyper`, `prob_hypo`, `error`.
-#'   `df` is `NA_real_` for the empirical path.
+#'   `df`, `scale`, `prob_pos`, `prob_neg`, `prob_hyper`, `prob_hypo`,
+#'   `prob_rope`, `ref_beta`, `mean_dbeta`, `dbeta_lo`, `dbeta_hi`,
+#'   `delta_beta`, `error`.
+#'   `df` is `NA_real_` for the empirical path. The beta-scale columns are
+#'   `NA_real_` when no region matrix is available, or when
+#'   `summary_fun = "pc1"` (PC1 scores are not M-values).
 #'
 #' @importFrom stats pt qt median quantile sd
 #' @importFrom methods is
@@ -42,8 +69,11 @@
 #'
 #' # A wider credible interval
 #' head(posterior_summary(fit, ci = 0.99))
+#'
+#' # Posterior mass inside the region of practical equivalence
+#' summary(posterior_summary(fit)$prob_rope)
 #' @export
-posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
+posterior_summary <- function(fit, delta = 0.10, ci = 0.95, ref_beta = NULL) {
   # Accept the user-facing object as well as the internal model list, so
   # callers never have to reach into the BreadFit's slots.
   if (methods::is(fit, "BreadFit")) fit <- fit@model
@@ -134,8 +164,84 @@ posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
 
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
+
+  # Posterior mass inside the ROPE. Computed here rather than inside each of
+  # the three data.frame branches for two reasons: NA propagates through
+  # pmin/pmax, so failed fits get NA for free; and every future backend
+  # inherits it. The complement is used deliberately -- it loses *relative*
+  # accuracy only where prob_rope is near zero, i.e. where the answer is "not
+  # unchanged" either way, and the decision rule compares against ~0.95, where
+  # absolute accuracy is what matters. Do not "fix" this into a direct
+  # integral. The clamp catches the analytical path rounding to ~-1e-17.
+  out$prob_rope <- pmin(pmax(1 - out$prob_hyper - out$prob_hypo, 0), 1)
+
+  # Beta-scale translation, anchored per region.
+  rb <- .resolve_ref_beta(fit, out$region_id, ref_beta)
+  k  <- .dbeta_per_dm(rb)
+  out$ref_beta   <- rb
+  out$mean_dbeta <- out$mean_effect * k
+  out$dbeta_lo   <- out$ci_lo * k
+  out$dbeta_hi   <- out$ci_hi * k
+  out$delta_beta <- delta * k
+
+  out <- out[, .POST_COLS, drop = FALSE]
   attr(out, "delta")    <- delta
   attr(out, "ci")       <- ci
   attr(out, "contrast") <- fit$contrast
+  out
+}
+
+# Canonical column order for posterior_summary(). `error` stays last.
+.POST_COLS <- c(
+  "region_id", "n", "mean_effect", "median_effect", "ci_lo", "ci_hi",
+  "df", "scale",
+  "prob_pos", "prob_neg", "prob_hyper", "prob_hypo", "prob_rope",
+  "ref_beta", "mean_dbeta", "dbeta_lo", "dbeta_hi", "delta_beta",
+  "error"
+)
+
+# Resolve the per-region beta anchor for the M -> beta linearisation.
+#
+# Default: the region's own mean methylation, as the back-transform of its
+# mean M-value. This is defined for every design (a factor's reference level
+# is not -- consider `~ passage`, an interaction contrast, or `~ 0 + group`),
+# needs nothing beyond state the model already carries, and sits where the
+# linearisation error is smallest on average. Note it is m_to_beta(mean(M)),
+# not mean(beta); those differ by Jensen, and the former is the right anchor
+# for a linearisation of an M-scale model.
+.resolve_ref_beta <- function(model, region_ids, ref_beta = NULL) {
+  n <- length(region_ids)
+
+  if (!is.null(ref_beta)) {
+    .check_ref_beta(ref_beta)
+    if (length(ref_beta) == 1L) return(rep(as.numeric(ref_beta), n))
+    if (!is.null(names(ref_beta))) {
+      return(unname(as.numeric(ref_beta[match(region_ids, names(ref_beta))])))
+    }
+    if (length(ref_beta) != n) {
+      stop("`ref_beta` must be length 1, named by region_id, or length ",
+           n, " (one per region); got ", length(ref_beta),
+           " unnamed values.", call. = FALSE)
+    }
+    return(as.numeric(ref_beta))
+  }
+
+  rm_ <- model$region_mat
+  if (is.null(rm_) || !is.matrix(rm_) || nrow(rm_) == 0L) {
+    return(rep(NA_real_, n))
+  }
+  if (identical(attr(rm_, "summary_fun"), "pc1")) {
+    message("Beta-scale columns are NA under `summary_fun = \"pc1\"`: ",
+            "PC1 scores are not M-values, so no beta translation exists. ",
+            "Pass `ref_beta` explicitly to override.")
+    return(rep(NA_real_, n))
+  }
+
+  idx <- match(region_ids, rownames(rm_))
+  mM  <- rep(NA_real_, n)
+  ok  <- !is.na(idx)
+  if (any(ok)) mM[ok] <- rowMeans(rm_[idx[ok], , drop = FALSE], na.rm = TRUE)
+  out <- .m_to_beta(mM)
+  out[!is.finite(out)] <- NA_real_
   out
 }
