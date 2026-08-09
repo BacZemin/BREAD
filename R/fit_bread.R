@@ -54,6 +54,21 @@
 #' @importFrom SummarizedExperiment colData assay assayNames
 #' @importFrom S4Vectors mcols
 #' @importFrom stats model.matrix
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' # Which of the 500 predefined regions change methylation with passage
+#' # in the control (untreated) fibroblasts?
+#' fit <- fit_bread(se_ctrl, reg, ~ passage,
+#'                  feature_class_col = "feature_class")
+#' fit
+#'
+#' head(results(fit))
+#' table(results(fit)$classification)
 #' @export
 fit_bread <- function(se, features, design,
                       contrast          = NULL,

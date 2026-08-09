@@ -27,3 +27,19 @@ A long \code{data.frame} with columns \code{region_id}, \code{draw}, \code{value
 Samples are drawn from the marginal scaled Student-t posterior of the
 contrast coefficient, \verb{beta ~ mu_n + scale * t_\{2 a_n\}}.
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+
+# Always name the region(s) you want -- the default (NULL) draws from
+# every region, which is `n` x n_regions rows.
+rid <- results(fit)$region_id[1]
+d <- posterior_draws(fit, region_id = rid, n = 500L, seed = 1L)
+head(d)
+quantile(d$value, c(0.025, 0.5, 0.975))
+}

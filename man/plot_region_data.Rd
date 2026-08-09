@@ -18,3 +18,19 @@ A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
 Boxplot + jitter of the summarized region values for a single region,
 grouped by the first variable in the design formula.
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+
+res <- results(fit)
+rid <- res$region_id[which(res$classification == "hypermethylated")[1]]
+if (is.na(rid)) rid <- res$region_id[1]
+
+# `region_id` must be a single region.
+plot_region_data(fit, rid)
+}

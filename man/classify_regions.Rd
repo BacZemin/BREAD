@@ -33,3 +33,19 @@ In the rare case that both probabilities exceed the cutoff (only possible
 for very low \code{prob_cutoff}), the region is assigned to whichever side has
 the larger posterior probability.
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+post <- posterior_summary(fit)
+
+cl <- classify_regions(post)
+table(cl$classification)
+
+# A stricter cutoff moves borderline regions into `inconclusive`
+table(classify_regions(post, prob_cutoff = 0.99)$classification)
+}

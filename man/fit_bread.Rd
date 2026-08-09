@@ -91,6 +91,22 @@ updates); MCMC controls \code{iter}, \code{chains}, \code{cores}, \code{seed} ca
 through \code{...} to \code{fit_bread_brms()}.
 }
 
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+# Which of the 500 predefined regions change methylation with passage
+# in the control (untreated) fibroblasts?
+fit <- fit_bread(se_ctrl, reg, ~ passage,
+                 feature_class_col = "feature_class")
+fit
+
+head(results(fit))
+table(results(fit)$classification)
+}
 \seealso{
 \code{\link[=validate_bread_input]{validate_bread_input()}}, \code{\link[=map_probes_to_features]{map_probes_to_features()}},
 \code{\link[=summarize_features]{summarize_features()}}, \code{\link[=posterior_summary]{posterior_summary()}}, \code{\link[=classify_regions]{classify_regions()}}

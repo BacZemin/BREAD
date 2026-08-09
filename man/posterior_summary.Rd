@@ -7,7 +7,8 @@
 posterior_summary(fit, delta = 0.1, ci = 0.95)
 }
 \arguments{
-\item{fit}{Output of \code{\link[=fit_bread_summary]{fit_bread_summary()}} or \code{\link[=fit_bread_brms]{fit_bread_brms()}}.}
+\item{fit}{A \link{BreadFit} (as returned by \code{\link[=fit_bread]{fit_bread()}}), or the internal
+model list from \code{\link[=fit_bread_summary]{fit_bread_summary()}} / \code{\link[=fit_bread_brms]{fit_bread_brms()}}.}
 
 \item{delta}{Effect-size threshold on the M-value scale. Default \code{0.10}.}
 
@@ -39,3 +40,19 @@ computed from the MCMC draws directly.
 Columns in the returned data frame are the same in both cases.
 }
 
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+
+# A BreadFit is accepted directly; the internal model list also works.
+post <- posterior_summary(fit)
+head(post)
+
+# A wider credible interval
+head(posterior_summary(fit, ci = 0.99))
+}

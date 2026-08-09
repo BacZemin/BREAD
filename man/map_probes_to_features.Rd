@@ -37,3 +37,18 @@ format). Probes with no region are silently excluded from the returned
 mapping. Regions excluded by \code{min_probes} (including those with zero
 overlaps) are recorded on \code{attr(mapping, "dropped_regions")}.
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+mapping <- map_probes_to_features(se, reg)
+head(mapping)
+nrow(mapping)
+
+# Regions carrying fewer than `min_probes` probes are dropped and
+# recorded in an attribute rather than silently disappearing.
+attr(mapping, "dropped_regions")
+}

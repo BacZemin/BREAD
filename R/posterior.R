@@ -15,7 +15,8 @@
 #'
 #' Columns in the returned data frame are the same in both cases.
 #'
-#' @param fit Output of [fit_bread_summary()] or [fit_bread_brms()].
+#' @param fit A [BreadFit] (as returned by [fit_bread()]), or the internal
+#'   model list from [fit_bread_summary()] / [fit_bread_brms()].
 #' @param delta Effect-size threshold on the M-value scale. Default `0.10`.
 #' @param ci Credible-interval mass. Default `0.95`.
 #'
@@ -25,8 +26,27 @@
 #'   `df` is `NA_real_` for the empirical path.
 #'
 #' @importFrom stats pt qt median quantile sd
+#' @importFrom methods is
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' fit <- fit_bread(se_ctrl, reg, ~ passage)
+#'
+#' # A BreadFit is accepted directly; the internal model list also works.
+#' post <- posterior_summary(fit)
+#' head(post)
+#'
+#' # A wider credible interval
+#' head(posterior_summary(fit, ci = 0.99))
 #' @export
 posterior_summary <- function(fit, delta = 0.10, ci = 0.95) {
+  # Accept the user-facing object as well as the internal model list, so
+  # callers never have to reach into the BreadFit's slots.
+  if (methods::is(fit, "BreadFit")) fit <- fit@model
   if (!is.list(fit) || is.null(fit$fits) || is.null(fit$contrast_idx)) {
     stop("`fit` must be the output of fit_bread_summary() or fit_bread_brms().",
          call. = FALSE)

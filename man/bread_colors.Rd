@@ -22,3 +22,8 @@ Colorblind-reasonable palette derived from the MetBrewer \code{Cross} palette
 (Blake Robert Mills). Embedded as hex values so there is no runtime
 dependency on the \code{MetBrewer} package.
 }
+\examples{
+bread_colors("classification")
+bread_colors("group")
+bread_colors("cross")
+}

@@ -37,3 +37,16 @@ coordinates, that \code{features} is a non-empty \link[GenomicRanges:GRanges-cla
 that \code{assay_name} is present, and that \code{contrast} (when non-NULL) resolves
 to a coefficient of the design's model matrix.
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+# The packaged data keeps beta values in an assay named "betas", so
+# both arguments are given explicitly here. fit_bread() detects them
+# for you; this lower-level helper does not.
+validate_bread_input(se_ctrl, reg, ~ passage,
+                     assay_name = "betas", input_scale = "Beta")
+}

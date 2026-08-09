@@ -27,6 +27,20 @@
 #' @importFrom SummarizedExperiment rowRanges
 #' @importFrom GenomicRanges findOverlaps
 #' @importFrom S4Vectors queryHits subjectHits mcols
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' mapping <- map_probes_to_features(se, reg)
+#' head(mapping)
+#' nrow(mapping)
+#'
+#' # Regions carrying fewer than `min_probes` probes are dropped and
+#' # recorded in an attribute rather than silently disappearing.
+#' attr(mapping, "dropped_regions")
 #' @export
 map_probes_to_features <- function(se, features, min_probes = 3L) {
   if (!methods::is(se, "SummarizedExperiment")) {

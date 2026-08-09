@@ -33,10 +33,21 @@
 #'   `estimate`, `p.value`, `FDR`, ...).
 #'
 #' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' fit <- fit_bread(se_ctrl, reg, ~ passage)
+#' table(results(fit)$classification)
+#'
+#' # The enrichment call downloads KnowYourCG reference databases, so it is
+#' # not run here.
 #' \dontrun{
-#'   fit <- fit_bread(se, features, ~ group)
-#'   enr <- bread_kycg(fit, platform = "EPIC")
-#'   head(enr[enr$FDR < 0.01, ])
+#' enr <- bread_kycg(fit, which = "hypermethylated",
+#'                   platform = "EPICv2")
+#' head(enr[enr$FDR < 0.01, ])
 #' }
 #'
 #' @importFrom methods is

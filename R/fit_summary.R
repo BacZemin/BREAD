@@ -16,6 +16,13 @@
 #'   Defaults `a0 = b0 = 0.001`.
 #'
 #' @return A list with class `"bread_prior"`.
+#' @examples
+#' # Defaults: weak coefficient precision, near-flat inverse-gamma on the
+#' # residual variance.
+#' bread_prior()
+#'
+#' # A tighter prior, e.g. when regions are small and n is low
+#' bread_prior(lambda0 = 0.05, a0 = 0.01, b0 = 0.01)
 #' @export
 bread_prior <- function(mu0 = NULL, Lambda0 = NULL,
                         lambda0 = 0.01, a0 = 0.001, b0 = 0.001) {

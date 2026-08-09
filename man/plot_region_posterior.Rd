@@ -25,3 +25,21 @@ for one or more regions, with vertical guides at \code{0} and \verb{+/- delta} a
 color by final classification. When multiple regions are supplied the plot
 facets by region.
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage,
+                 feature_class_col = "feature_class")
+
+# Pick a region that was actually called hypermethylated; passing
+# `region_id = NULL` would facet every region in the fit.
+res <- results(fit)
+rid <- res$region_id[which(res$classification == "hypermethylated")[1]]
+if (is.na(rid)) rid <- res$region_id[1]
+
+plot_region_posterior(fit, region_id = rid)
+}

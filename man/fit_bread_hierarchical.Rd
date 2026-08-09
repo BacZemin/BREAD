@@ -6,6 +6,10 @@
 \usage{
 fit_bread_hierarchical(...)
 }
+\value{
+Currently signals an error; planned to return a list with the
+same shape as \code{\link[=fit_bread_summary]{fit_bread_summary()}}.
+}
 \description{
 Planned for v2. Models CpGs nested within regions with CpG-specific
 offsets and partial pooling of region-level effects.

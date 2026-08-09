@@ -37,3 +37,16 @@ cores, seed).}
 \item{\code{diagnostics}}{List with backend, seed, feature counts, failure counts.}
 }}
 
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+fit
+
+slotNames(fit)
+methods::slot(fit, "diagnostics")
+}

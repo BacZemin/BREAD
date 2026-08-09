@@ -5,6 +5,8 @@
 #' All return [ggplot2::ggplot] objects and use the MetBrewer `Cross` palette
 #' (see [bread_colors()]).
 #'
+#' @return Each of the three functions returns a [ggplot2::ggplot] object.
+#'
 #' @name BREAD-plots
 #' @keywords internal
 NULL
@@ -27,6 +29,23 @@ NULL
 #' @importFrom methods is
 #' @importFrom stats dt
 #' @importFrom rlang .data
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' fit <- fit_bread(se_ctrl, reg, ~ passage,
+#'                  feature_class_col = "feature_class")
+#'
+#' # Pick a region that was actually called hypermethylated; passing
+#' # `region_id = NULL` would facet every region in the fit.
+#' res <- results(fit)
+#' rid <- res$region_id[which(res$classification == "hypermethylated")[1]]
+#' if (is.na(rid)) rid <- res$region_id[1]
+#'
+#' plot_region_posterior(fit, region_id = rid)
 #' @export
 plot_region_posterior <- function(fit, region_id = NULL,
                                   n_grid = 500L, show_delta = TRUE) {
@@ -109,6 +128,21 @@ plot_region_posterior <- function(fit, region_id = NULL,
 #'
 #' @importFrom methods is
 #' @importFrom rlang .data
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' fit <- fit_bread(se_ctrl, reg, ~ passage)
+#'
+#' res <- results(fit)
+#' rid <- res$region_id[which(res$classification == "hypermethylated")[1]]
+#' if (is.na(rid)) rid <- res$region_id[1]
+#'
+#' # `region_id` must be a single region.
+#' plot_region_data(fit, rid)
 #' @export
 plot_region_data <- function(fit, region_id) {
   if (!methods::is(fit, "BreadFit"))
@@ -180,6 +214,19 @@ plot_region_data <- function(fit, region_id) {
 #'
 #' @importFrom methods is
 #' @importFrom rlang .data
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' # `feature_class_col` names a column of the fit's probe-to-region
+#' # mapping, so it has to be passed to fit_bread() first.
+#' fit <- fit_bread(se_ctrl, reg, ~ passage,
+#'                  feature_class_col = "feature_class")
+#'
+#' plot_feature_set(fit, feature_class_col = "feature_class")
 #' @export
 plot_feature_set <- function(fit, feature_class_col = NULL) {
   if (!methods::is(fit, "BreadFit"))

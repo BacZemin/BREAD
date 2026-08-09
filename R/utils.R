@@ -1,10 +1,17 @@
 #' Internal utilities
 #'
+#' @return Varies by helper: the scale transforms return numeric vectors,
+#'   the detection helpers return a character scalar.
+#'
 #' @name BREAD-utils
 #' @keywords internal
 NULL
 
 #' Beta -> M transform, clamped away from 0/1.
+#'
+#' @param beta Numeric vector of beta values.
+#' @param eps Clamping tolerance keeping values off the 0/1 asymptotes.
+#' @return Numeric vector of M-values.
 #' @keywords internal
 .beta_to_m <- function(beta, eps = 1e-6) {
   beta <- pmin(pmax(beta, eps), 1 - eps)
@@ -12,6 +19,9 @@ NULL
 }
 
 #' M -> Beta transform.
+#'
+#' @param m Numeric vector of M-values.
+#' @return Numeric vector of beta values in (0, 1).
 #' @keywords internal
 .m_to_beta <- function(m) {
   2^m / (2^m + 1)
@@ -53,6 +63,10 @@ NULL
 #'   - `"cross"`          : full 9-color palette
 #'
 #' @return A character vector of hex colors (named where applicable).
+#' @examples
+#' bread_colors("classification")
+#' bread_colors("group")
+#' bread_colors("cross")
 #' @export
 bread_colors <- function(which = c("classification", "group", "cross")) {
   which <- match.arg(which)
