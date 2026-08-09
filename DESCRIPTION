@@ -5,15 +5,19 @@ Date: 2026-08-09
 Authors@R: 
     person("Jaemin", "Park", , "jaemin.park@vai.org", role = c("aut", "cre"))
 Description: BREAD provides targeted Bayesian inference for predefined DNA
-    methylation regions using array data stored in SummarizedExperiment
-    objects. For each user-supplied region, BREAD fits a Bayesian model,
-    computes posterior probabilities of directional methylation change,
-    and classifies regions as hypermethylated, hypomethylated, or
-    inconclusive at user-configurable effect-size and probability
-    thresholds. Both an analytic conjugate backend and a full MCMC
-    backend via 'brms' are provided, sharing the same posterior and
-    classification path. Results can be passed to 'knowYourCG' for
-    enrichment testing against curated CpG feature databases.
+    methylation regions using array data, supplied either as a
+    SummarizedExperiment or as a probe-by-sample matrix. For each
+    user-supplied region, BREAD fits a Bayesian model and computes
+    posterior probabilities of directional methylation change and of
+    practical equivalence, classifying regions as hypermethylated,
+    hypomethylated, unchanged, or inconclusive at user-configurable
+    effect-size and probability thresholds. The unchanged class reports
+    regions whose posterior lies inside the region of practical
+    equivalence, distinguishing evidence of no change from absence of
+    evidence. Both an analytic conjugate backend and a full MCMC backend
+    via 'brms' are provided, sharing the same posterior and classification
+    path. Results can be passed to 'knowYourCG' for enrichment testing
+    against curated CpG feature databases.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends:

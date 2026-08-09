@@ -148,8 +148,23 @@ plot_feature_set(fit_vitc, feature_class_col = "feature_class") +
 
 VitC demethylation is broadly distributed but, with only two replicates per
 arm, most regions land in the `inconclusive` class at `prob_cutoff = 0.95`.
-This is BREAD doing its job — it does not claim more certainty than the
-sample size supports.
+
+That word now carries a precise meaning. With n = 2 the posterior is wide,
+so almost nothing reaches `prob_rope >= 0.95` either: these regions are not
+being called *unchanged*, they are being called *unresolved*. BREAD is
+saying it can neither detect a $\delta = 0.10$ effect nor rule one out —
+which is the honest answer, and a strictly more informative one than a
+non-significant p-value, because the same table tells you which regions
+*did* resolve in each direction.
+
+```{r rope-at-n2}
+summary(results(fit_vitc)$prob_rope)
+```
+
+If most of that distribution sits well below 0.95, the experiment is
+underpowered rather than null. Contrast this with a well-powered design,
+where regions genuinely unaffected by the treatment accumulate `prob_rope`
+near 1 and get called `unchanged` — a positive claim of no effect.
 
 ## The biologically interesting intersection
 
@@ -219,9 +234,12 @@ if (length(protected) > 0L) {
 ## Caveats
 
 - **n = 2 per arm.** The credible intervals are wide and many regions
-  remain `inconclusive`. BREAD's posterior probabilities are the honest
-  answer given the data; lowering `prob_cutoff` to, say, `0.80` will promote
-  more regions to `hyper` / `hypo` but also admit more false positives.
+  remain `inconclusive` — genuinely unresolved, not shown to be flat (see
+  the `prob_rope` distribution above). BREAD's posterior probabilities are
+  the honest answer given the data; lowering `prob_cutoff` to, say, `0.80`
+  will promote more regions to `hyper` / `hypo` but also admit more false
+  positives. Use `refit_bread(fit, prob_cutoff = 0.80)` to sweep that
+  without re-fitting anything.
 - Technical replicates, not biological. Real variance in the `aa57`
   effect across fibroblast lines is not captured by this experiment and
   would produce additional dispersion if included.

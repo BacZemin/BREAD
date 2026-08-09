@@ -248,13 +248,21 @@ $$
 
 The marginal posterior of the contrast coefficient is a location–scale
 Student-t with `df = 2 a_n`. BREAD uses `pt()`/`qt()` to compute
-$P(\beta > \delta)$ and $P(\beta < -\delta)$ analytically — no MCMC.
+$P(\beta > \delta)$, $P(\beta < -\delta)$ and
+$P(|\beta| \le \delta)$ analytically — no MCMC.
 
 The classification rule is then:
 
 - **hypermethylated** if $P(\beta > \delta) \ge$ `prob_cutoff`,
 - **hypomethylated** if $P(\beta < -\delta) \ge$ `prob_cutoff`,
+- **unchanged** if $P(|\beta| \le \delta) \ge$ `rope_cutoff`,
 - **inconclusive** otherwise.
+
+The three probabilities partition the posterior and sum to 1, so two of them
+can clear their thresholds at once only if those thresholds sum to no more
+than 1 — impossible at any sensible setting. The `unchanged` class is what
+separates *"this region demonstrably did not move by more than $\delta$"*
+from *"this region told us nothing"*; both used to be `inconclusive`.
 
 Need partial pooling across regions, non-conjugate priors, or ordered
 contrasts? Set `backend = "brms"`; everything else stays the same.

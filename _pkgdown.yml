@@ -12,10 +12,12 @@ home:
   title: "BREAD: Bayesian region-specific DNA methylation inference"
   description: >
     BREAD provides targeted Bayesian inference for predefined methylation
-    regions using array-derived data stored in SummarizedExperiment objects.
-    Instead of only returning p-values, BREAD estimates posterior
-    probabilities that each region is hypermethylated or hypomethylated
-    under a contrast of interest.
+    regions using array-derived data, supplied either as a
+    SummarizedExperiment or as a plain probe-by-sample matrix. Instead of
+    only returning p-values, BREAD estimates posterior probabilities that
+    each region is hypermethylated, hypomethylated, or practically
+    unchanged under a contrast of interest -- including a positive
+    statement of no change, which a p-value cannot make.
 
 authors:
   Jaemin Park:
@@ -44,6 +46,7 @@ reference:
     and drives the backend; the backend fit helpers themselves are internal.
   contents:
   - fit_bread
+  - refit_bread
   - bread_prior
 - title: "Pipeline building blocks"
   desc: >
@@ -55,6 +58,8 @@ reference:
   - summarize_features
   - posterior_summary
   - classify_regions
+  - bread_se
+  - bread_scale
 - title: "Plotting and palette"
   contents:
   - plot_region_posterior
