@@ -1,0 +1,57 @@
+# R CMD check on a clean runner.
+# Adapted from https://github.com/r-lib/actions/tree/v2/examples
+#
+# Deliberately ubuntu-only to start. macOS and Windows are added to the
+# matrix only once ubuntu is reliably green -- a three-platform matrix that
+# goes red on day one is noise, not signal.
+on:
+  push:
+    branches: [main, polish-for-release]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+name: R-CMD-check
+
+permissions:
+  contents: read
+
+jobs:
+  R-CMD-check:
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: ubuntu-latest, r: 'release'}
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      # brms/rstan are Suggests and are slow+flaky to build on runners; the
+      # tests that need them already skip_if_not_installed().
+      _R_CHECK_FORCE_SUGGESTS_: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          args: 'c("--no-manual", "--as-cran")'

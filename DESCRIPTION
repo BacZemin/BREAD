@@ -1,6 +1,6 @@
 Package: BREAD
 Title: Bayesian Region-specific DNA Methylation Inference
-Version: 0.0.0.9000
+Version: 0.99.0
 Authors@R: 
     person("Jaemin", "Park", , "jaemin.park@vai.org", role = c("aut", "cre"))
 Description: BREAD provides targeted Bayesian inference for predefined DNA
@@ -12,6 +12,8 @@ Description: BREAD provides targeted Bayesian inference for predefined DNA
     thresholds.
 License: MIT + file LICENSE
 Encoding: UTF-8
+Depends:
+    R (>= 4.4.0)
 Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
@@ -29,15 +31,16 @@ Suggests:
     tidybayes
 Config/testthat/edition: 3
 Imports: 
-    GenomeInfoDb,
     GenomicRanges,
     ggplot2,
     methods,
     rlang,
     S4Vectors,
     stats,
-    SummarizedExperiment
-biocViews: DNAMethylation, Bayesian, Epigenetics, DifferentialMethylation, MethylationArray
+    SummarizedExperiment,
+    withr
+biocViews: DNAMethylation, Bayesian, Epigenetics, DifferentialMethylation,
+    MethylationArray, Classification
 URL: https://github.com/BacZemin/BREAD, https://baczemin.github.io/BREAD
 BugReports: https://github.com/BacZemin/BREAD/issues
 VignetteBuilder: knitr
