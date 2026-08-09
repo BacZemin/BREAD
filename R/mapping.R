@@ -26,6 +26,7 @@
 #' @importFrom methods is
 #' @importFrom SummarizedExperiment rowRanges
 #' @importFrom GenomicRanges findOverlaps
+#' @importFrom GenomeInfoDb seqlevels
 #' @importFrom S4Vectors queryHits subjectHits mcols
 #' @examples
 #' suppressPackageStartupMessages(library(SummarizedExperiment))
@@ -75,10 +76,20 @@ map_probes_to_features <- function(se, features, min_probes = 3L) {
     region_ids <- paste0("region_", seq_along(features))
   }
 
+  # findOverlaps() warns about non-overlapping seqlevels, which is not
+  # actionable on its own -- the error below reports them instead.
   hits <- suppressWarnings(GenomicRanges::findOverlaps(probes, features))
   if (length(hits) == 0L) {
+    .fmt_seqlevels <- function(x) {
+      s <- GenomeInfoDb::seqlevels(x)
+      if (length(s) == 0L) return("<none>")
+      paste(c(s[seq_len(min(5L, length(s)))],
+              if (length(s) > 5L) "..."), collapse = ", ")
+    }
     stop("No probes overlap any of the ", length(features),
-         " features. Check that `seqlevels()` and genome builds agree.",
+         " features. Check that `seqlevels()` and genome builds agree.\n",
+         "  probe seqlevels  : ", .fmt_seqlevels(probes), "\n",
+         "  feature seqlevels: ", .fmt_seqlevels(features),
          call. = FALSE)
   }
 

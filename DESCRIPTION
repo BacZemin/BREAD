@@ -31,6 +31,7 @@ Suggests:
     tidybayes
 Config/testthat/edition: 3
 Imports: 
+    GenomeInfoDb,
     GenomicRanges,
     ggplot2,
     methods,
