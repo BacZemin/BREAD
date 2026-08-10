@@ -56,11 +56,37 @@ bread_prior <- function(mu0 = NULL, Lambda0 = NULL,
 #' \deqn{\Lambda_n = X^\top X + \Lambda_0,\quad \mu_n = \Lambda_n^{-1}(X^\top y + \Lambda_0 \mu_0),}
 #' \deqn{a_n = a_0 + n/2,\quad b_n = b_0 + \tfrac{1}{2}(y^\top y + \mu_0^\top \Lambda_0 \mu_0 - \mu_n^\top \Lambda_n \mu_n).}
 #'
+#' @section Degrees of freedom (`df_mode`):
+#' The marginal posterior of a coefficient is a Student-t with
+#' \eqn{\nu = 2 a_n} degrees of freedom. Under the textbook conjugate update
+#' \eqn{a_n = a_0 + n/2}, so \eqn{\nu} depends on the sample size **only** and
+#' never on the number of coefficients \eqn{p}. With the weak default prior
+#' (\eqn{\Lambda_0 = 0.01 I}) that overstates precision: the reference-prior
+#' answer, and the one `lm()` gives, is \eqn{n - p}. The discrepancy is exactly
+#' a factor \eqn{\sqrt{n/(n-p)}} on the posterior scale, so it grows with
+#' \eqn{p/n} and bites hardest on interaction designs at small \eqn{n}.
+#'
+#' - `"conjugate"` (default): \eqn{a_n = a_0 + n/2}. The literal conjugate
+#'   result; correct given the stated prior, but optimistic when that prior was
+#'   only ever meant to be uninformative.
+#' - `"residual"`: \eqn{a_n = a_0 + (n - p)/2}. Reproduces the classical
+#'   \eqn{t_{n-p}} marginal, matching `lm()` confidence intervals as
+#'   \eqn{\Lambda_0 \to 0}. Recommended whenever the prior is weak and
+#'   \eqn{p > 1}.
+#'
+#' Regions with `n <= p` carry no residual information about
+#' \eqn{\sigma^2}: the residuals are identically zero, `b_n` collapses to
+#' `b0`, and the posterior scale collapses with it. Such regions are dropped
+#' (`error = "n <= number of coefficients"`) under **both** modes rather than
+#' returned with a spuriously tight interval.
+#'
 #' @param region_mat Region-by-sample numeric matrix (from [summarize_features()]).
 #' @param coldata Sample metadata ([S4Vectors::DataFrame] or `data.frame`).
 #' @param design One-sided formula.
 #' @param contrast Character coefficient name of interest.
 #' @param prior A [bread_prior()] object (or `NULL` for defaults).
+#' @param df_mode `"conjugate"` (default) or `"residual"`. See the
+#'   *Degrees of freedom* section.
 #'
 #' @return A list with:
 #'   - `fits`: per-region list of `list(mu_n, Lambda_n_inv, a_n, b_n, n, error)`
@@ -69,12 +95,15 @@ bread_prior <- function(mu0 = NULL, Lambda0 = NULL,
 #'   - `contrast`, `contrast_idx`: contrast name and its column index in `X`
 #'   - `region_ids`: rownames of `region_mat`
 #'   - `prior`: the prior applied (with `mu0`/`Lambda0` filled in)
+#'   - `df_mode`: the degrees-of-freedom convention used
 #'
 #' @importFrom methods is
 #' @importFrom stats model.matrix
 #' @keywords internal
 fit_bread_summary <- function(region_mat, coldata, design, contrast,
-                              prior = NULL) {
+                              prior = NULL,
+                              df_mode = c("conjugate", "residual")) {
+  df_mode <- match.arg(df_mode)
   if (!is.matrix(region_mat)) {
     stop("`region_mat` must be a numeric matrix (regions \u00d7 samples).",
          call. = FALSE)
@@ -117,9 +146,12 @@ fit_bread_summary <- function(region_mat, coldata, design, contrast,
                     mu0     = prior$mu0,
                     Lambda0 = prior$Lambda0,
                     a0      = prior$a0,
-                    b0      = prior$b0)
+                    b0      = prior$b0,
+                    df_mode = df_mode)
   })
   names(fits) <- rownames(region_mat)
+
+  .warn_low_residual_df(fits, p, df_mode)
 
   list(
     fits          = fits,
@@ -129,14 +161,32 @@ fit_bread_summary <- function(region_mat, coldata, design, contrast,
     contrast_idx  = contrast_idx,
     region_ids    = rownames(region_mat),
     prior         = prior,
+    df_mode       = df_mode,
     region_mat    = region_mat,
     design        = design,
     coldata       = cd_df
   )
 }
 
+# Internal: one warning for the whole fit, not one per region.
+.warn_low_residual_df <- function(fits, p, df_mode) {
+  ok  <- vapply(fits, function(f) is.na(f$error), logical(1))
+  if (!any(ok)) return(invisible(NULL))
+  low <- ok & vapply(fits, function(f) isTRUE((f$n - p) < 3L), logical(1))
+  if (!any(low)) return(invisible(NULL))
+  extra <- if (identical(df_mode, "conjugate")) {
+    " Intervals there are optimistic; consider df_mode = \"residual\"."
+  } else ""
+  warning(sprintf(
+    "%d of %d fitted region(s) have fewer than 3 residual degrees of freedom (n - p < 3).%s",
+    sum(low), sum(ok), extra), call. = FALSE)
+  invisible(NULL)
+}
+
 # Internal: conjugate NIG posterior for one region
-.fit_one_region <- function(y, X, mu0, Lambda0, a0, b0) {
+.fit_one_region <- function(y, X, mu0, Lambda0, a0, b0,
+                            df_mode = c("conjugate", "residual")) {
+  df_mode <- match.arg(df_mode)
   p  <- length(mu0)
   ok <- !is.na(y)
   y  <- y[ok]
@@ -152,6 +202,10 @@ fit_bread_summary <- function(region_mat, coldata, design, contrast,
     error        = reason
   )
   if (n < 2L) return(na_fit("too few non-NA samples"))
+  # No residual information about sigma^2: residuals are identically zero, so
+  # b_n collapses to b0 and the posterior scale collapses with it. Returning a
+  # fit here yields intervals that are tight for purely numerical reasons.
+  if (n <= p) return(na_fit("n <= number of coefficients"))
 
   XtX <- crossprod(X)
   Xty <- drop(crossprod(X, y))
@@ -164,7 +218,9 @@ fit_bread_summary <- function(region_mat, coldata, design, contrast,
   rhs  <- Xty + drop(Lambda0 %*% mu0)
   mu_n <- drop(Lambda_n_inv %*% rhs)
 
-  a_n    <- a0 + n / 2
+  # "residual" deducts the p coefficients the design spends, reproducing the
+  # classical t_{n-p} marginal; "conjugate" is the literal NIG update.
+  a_n    <- a0 + (n - if (identical(df_mode, "residual")) p else 0L) / 2
   qprior <- drop(crossprod(mu0, Lambda0 %*% mu0))
   qpost  <- drop(crossprod(mu_n, Lambda_n %*% mu_n))
   b_n    <- b0 + 0.5 * (sum(y^2) + qprior - qpost)

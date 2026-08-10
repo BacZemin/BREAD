@@ -61,6 +61,14 @@
 #' @param input_scale `"M"` or `"Beta"`. `NULL` auto-detects from value range.
 #' @param backend One of `"conjugate"` (default) or `"brms"`.
 #' @param prior Optional [bread_prior()] object (conjugate backend only).
+#' @param df_mode Degrees-of-freedom convention for the conjugate backend:
+#'   `"conjugate"` (default, \eqn{a_n = a_0 + n/2}) or `"residual"`
+#'   (\eqn{a_n = a_0 + (n-p)/2}), which reproduces the classical
+#'   \eqn{t_{n-p}} marginal and matches `lm()` intervals under a weak prior.
+#'   The default overstates precision by a factor \eqn{\sqrt{n/(n-p)}} on the
+#'   posterior scale — negligible when \eqn{p \ll n}, material for interaction
+#'   designs at small \eqn{n}. Ignored by `backend = "brms"`, which samples
+#'   \eqn{\sigma^2} directly. See [fit_bread_summary()].
 #' @param ... Additional arguments forwarded to the backend. For
 #'   `backend = "brms"`, this accepts `iter`, `chains`, `cores`, `seed`, etc.
 #'
@@ -107,10 +115,18 @@ fit_bread <- function(x, features, design,
                       input_scale       = NULL,
                       backend           = c("conjugate", "brms"),
                       prior             = NULL,
+                      df_mode           = c("conjugate", "residual"),
                       ...) {
   the_call    <- match.call()
   summary_fun <- match.arg(summary_fun)
   backend     <- match.arg(backend)
+  df_mode     <- match.arg(df_mode)
+  if (identical(backend, "brms") && !missing(df_mode) &&
+      identical(df_mode, "residual")) {
+    message("`df_mode` is ignored for backend = \"brms\": MCMC samples ",
+            "sigma^2 directly, so the residual degrees of freedom are ",
+            "already accounted for.")
+  }
   delta_default <- missing(delta)
 
   # Accept a matrix (what openSesame() hands you) as readily as a
@@ -184,7 +200,8 @@ fit_bread <- function(x, features, design,
       coldata    = SummarizedExperiment::colData(se),
       design     = design,
       contrast   = contrast,
-      prior      = prior
+      prior      = prior,
+      df_mode    = df_mode
     ),
     brms = fit_bread_brms(
       region_mat = region_mat,
@@ -226,6 +243,7 @@ fit_bread <- function(x, features, design,
       ref_beta          = ref_beta,
       summary_fun       = summary_fun,
       backend           = backend,
+      df_mode           = if (identical(backend, "conjugate")) df_mode else NA_character_,
       min_probes        = min_probes,
       feature_class_col = if (is.null(feature_class_col)) NA_character_ else feature_class_col
     ),

@@ -24,6 +24,7 @@ fit_bread(
   input_scale = NULL,
   backend = c("conjugate", "brms"),
   prior = NULL,
+  df_mode = c("conjugate", "residual"),
   ...
 )
 }
@@ -79,6 +80,15 @@ columns. \code{NULL} (default) uses each region's own mean. See
 \item{backend}{One of \code{"conjugate"} (default) or \code{"brms"}.}
 
 \item{prior}{Optional \code{\link[=bread_prior]{bread_prior()}} object (conjugate backend only).}
+
+\item{df_mode}{Degrees-of-freedom convention for the conjugate backend:
+\code{"conjugate"} (default, \eqn{a_n = a_0 + n/2}) or \code{"residual"}
+(\eqn{a_n = a_0 + (n-p)/2}), which reproduces the classical
+\eqn{t_{n-p}} marginal and matches \code{lm()} intervals under a weak prior.
+The default overstates precision by a factor \eqn{\sqrt{n/(n-p)}} on the
+posterior scale — negligible when \eqn{p \ll n}, material for interaction
+designs at small \eqn{n}. Ignored by \code{backend = "brms"}, which samples
+\eqn{\sigma^2} directly. See \code{\link[=fit_bread_summary]{fit_bread_summary()}}.}
 
 \item{...}{Additional arguments forwarded to the backend. For
 \code{backend = "brms"}, this accepts \code{iter}, \code{chains}, \code{cores}, \code{seed}, etc.}

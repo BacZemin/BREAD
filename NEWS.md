@@ -17,6 +17,13 @@ First release candidate, prepared for Bioconductor submission.
   difference, and it sees a more honest one.
 * **`results()` gains six columns**: `prob_rope`, `ref_beta`, `mean_dbeta`,
   `dbeta_lo`, `dbeta_hi`, `delta_beta`.
+* **Regions with `n <= p` are now dropped** with
+  `error = "n <= number of coefficients"` instead of being fitted. Such a
+  design leaves no residual information about \eqn{\sigma^2}: the residuals
+  are identically zero, `b_n` collapses to `b0`, and the posterior scale
+  collapses with it. On pure noise at `n = p = 4` the old behaviour returned
+  a scale ~7x tighter than at `n = 8` and a credible interval excluding zero.
+  Only `n < 2` was previously guarded.
 * **`n_features_in` now counts distinct region IDs**, not `GRanges` ranges.
   When several ranges share a `region_id` — the only way to pin a region to
   an exact probe set — the old counter reported the range count, printing
@@ -31,6 +38,23 @@ First release candidate, prepared for Bioconductor submission.
 
 ## New features
 
+* **`df_mode` argument to `fit_bread()`** (conjugate backend), choosing how
+  the posterior degrees of freedom are computed:
+  - `"conjugate"` (default, unchanged behaviour) — \eqn{a_n = a_0 + n/2}, so
+    \eqn{\nu = 2a_n} depends on the sample size only and never on the number
+    of coefficients \eqn{p}.
+  - `"residual"` — \eqn{a_n = a_0 + (n-p)/2}, reproducing the classical
+    \eqn{t_{n-p}} marginal and matching `lm()` intervals as
+    \eqn{\Lambda_0 \to 0}.
+
+  With the weak default prior the two differ by exactly
+  \eqn{\sqrt{n/(n-p)}} on the posterior scale — negligible when
+  \eqn{p \ll n}, but ~17% at `n = 16, p = 5`, a routine interaction design.
+  `"conjugate"` remains the default so existing results are reproducible;
+  `"residual"` is recommended whenever the prior is weak and \eqn{p > 1}.
+* **A single warning per fit when regions have fewer than 3 residual degrees
+  of freedom**, reporting how many of the fitted regions are affected rather
+  than warning once per region.
 * `fit_bread()` — end-to-end pipeline: validate → map → summarize → fit
   Bayesian region-level model → classify. Default backend is a conjugate
   Normal-Inverse-Gamma posterior computed analytically (no MCMC).

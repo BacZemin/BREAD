@@ -49,8 +49,9 @@ test_that("the model list shape is a stable contract", {
   expect_identical(
     names(fit@model),
     c("fits", "design_matrix", "coef_names", "contrast", "contrast_idx",
-      "region_ids", "prior", "region_mat", "design", "coldata")
+      "region_ids", "prior", "df_mode", "region_mat", "design", "coldata")
   )
+  expect_identical(fit@model$df_mode, "conjugate")
   expect_true(is.matrix(fit@model$region_mat))
   expect_identical(rownames(fit@model$region_mat), fit@model$region_ids)
 })
