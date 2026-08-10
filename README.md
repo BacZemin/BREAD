@@ -18,18 +18,33 @@ MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/
 
 **BREAD** (Bayesian Region-specific DNA methylation inference) provides
 targeted Bayesian inference for **predefined** DNA methylation regions
-from array data stored in `SummarizedExperiment` objects. For each
-region you supply, BREAD fits a Bayesian model, computes the posterior
-probability of a directional methylation change, and classifies the
-region as **hypermethylated**, **hypomethylated**, or **inconclusive**
-at user-configurable effect-size and probability thresholds.
+from array data — a `SummarizedExperiment`, or a plain probe-by-sample
+matrix as `sesame::openSesame()` returns. For each region you supply,
+BREAD fits a Bayesian model, computes posterior probabilities of
+methylation change, and classifies the region as **hypermethylated**,
+**hypomethylated**, **unchanged**, or **inconclusive** at
+user-configurable effect-size and probability thresholds.
 
 Unlike genome-wide DMR callers that scan for regions, BREAD answers a
 different question: *given regions I already care about (PRC2 targets,
 CGIs, LADs, a chromHMM state, a custom BED), what is the posterior
 evidence for methylation change in each one, and how confident am I?*
 Output is a per-region posterior — effect size, credible interval, and
-directional probabilities — not just a p-value.
+probabilities — not just a p-value.
+
+### The `unchanged` class
+
+Most tools give you two states: significant, and not-significant. That
+conflates *flat* with *underpowered*, which at the sample sizes typical
+of experimental epigenetics is most of your genome.
+
+BREAD reports `prob_rope`, the posterior mass inside the region of
+practical equivalence spanning −`delta` to +`delta`, and calls a region
+**`unchanged`** when that mass clears `rope_cutoff`. `inconclusive` then
+means only what its name says. Being able to state that a region
+*demonstrably did not move* — with a credible ceiling on how much it
+could have — is the one claim a p-value is structurally unable to make,
+and it is often the claim a pathway or cascade argument actually needs.
 
 ## Installation
 
@@ -71,6 +86,9 @@ fit <- fit_bread(
   design            = ~ passage,
   feature_class_col = "feature_class"
 )
+#> Warning: 496 of 496 fitted region(s) have fewer than 3 residual degrees of
+#> freedom (n - p < 3). Intervals there are optimistic; consider df_mode =
+#> "residual".
 
 fit                     # summary: n regions, backend, classification counts
 #> <BreadFit>
@@ -81,10 +99,13 @@ fit                     # summary: n regions, backend, classification counts
 #>   contrast   : passagelate 
 #>   delta      : 0.1 
 #>   prob_cutoff: 0.95 
+#>   rope_cutoff: 0.95 
+#>   ci         : 0.95 
 #>   n_regions  : 500 (of  500  input)
 #>   classifications:
 #>     hypermethylated  76
 #>     hypomethylated   39
+#>     unchanged        0
 #>     inconclusive     385
 ```
 
@@ -92,8 +113,8 @@ fit                     # summary: n regions, backend, classification counts
 res <- results(fit)     # one row per region
 table(res$classification)
 #> 
-#> hypermethylated  hypomethylated    inconclusive 
-#>              76              39             385
+#> hypermethylated  hypomethylated       unchanged    inconclusive 
+#>              76              39               0             385
 ```
 
 That is the whole pattern: a `SummarizedExperiment` of array data, a
@@ -107,35 +128,118 @@ carry a grouping column you want summarized.
 
 `results(fit)` returns one row per region:
 
-| column           | meaning                                               |
-|------------------|-------------------------------------------------------|
-| `region_id`      | region identifier                                     |
-| `n`              | number of probes summarized in the region             |
-| `mean_effect`    | posterior mean methylation change (M-scale)           |
-| `ci_lo`, `ci_hi` | 95% credible interval                                 |
-| `prob_hyper`     | P(effect \> +delta) — evidence for hypermethylation   |
-| `prob_hypo`      | P(effect \< -delta) — evidence for hypomethylation    |
-| `classification` | `hypermethylated` / `hypomethylated` / `inconclusive` |
+| column | meaning |
+|----|----|
+| `region_id` | region identifier |
+| `n` | samples contributing to the fit (non-NA); probe counts per region live in `fit@mapping$n_probes` |
+| `mean_effect` | posterior mean methylation change (M-scale) |
+| `ci_lo`, `ci_hi` | 95% credible interval |
+| `prob_hyper` | P(effect \> +delta) — evidence for hypermethylation |
+| `prob_hypo` | P(effect \< -delta) — evidence for hypomethylation |
+| `prob_rope` | P(\|effect\| \<= delta) — evidence of *no* change |
+| `mean_dbeta`, `dbeta_lo`, `dbeta_hi` | the effect and interval on the beta scale |
+| `ref_beta`, `delta_beta` | the anchor used for that translation, and `delta` in beta units |
+| `classification` | `hypermethylated` / `hypomethylated` / `unchanged` / `inconclusive` |
 
 ``` r
 head(res[, c("region_id", "n", "mean_effect", "ci_lo", "ci_hi",
-             "classification")])
-#>             region_id n   mean_effect       ci_lo     ci_hi  classification
-#> 1         PRC_CGI_025 4  0.1031847688 -0.07029387 0.2766634    inconclusive
-#> 2 Active_promoter_080 4  0.3106513471  0.15979964 0.4615031 hypermethylated
-#> 3    PMD_soloWCGW_066 4 -0.2168276139 -0.64352511 0.2098699    inconclusive
-#> 4         PRC_CGI_039 4 -0.0003147594 -0.40264440 0.4020149    inconclusive
-#> 5    PMD_soloWCGW_030 4  0.2989332658  0.09707228 0.5007942 hypermethylated
-#> 6        Bivalent_090 4  0.0603224027 -0.31407739 0.4347222    inconclusive
+             "prob_rope", "classification")])
+#>             region_id n   mean_effect       ci_lo     ci_hi   prob_rope
+#> 1         PRC_CGI_025 4  0.1031847688 -0.07029387 0.2766634 0.465241327
+#> 2 Active_promoter_080 4  0.3106513471  0.15979964 0.4615031 0.008120156
+#> 3    PMD_soloWCGW_066 4 -0.2168276139 -0.64352511 0.2098699 0.190635821
+#> 4         PRC_CGI_039 4 -0.0003147594 -0.40264440 0.4020149 0.471851757
+#> 5    PMD_soloWCGW_030 4  0.2989332658  0.09707228 0.5007942 0.023370506
+#> 6        Bivalent_090 4  0.0603224027 -0.31407739 0.4347222 0.458234000
+#>    classification
+#> 1    inconclusive
+#> 2 hypermethylated
+#> 3    inconclusive
+#> 4    inconclusive
+#> 5 hypermethylated
+#> 6    inconclusive
 ```
 
-A region is called **hypermethylated** if `prob_hyper >= prob_cutoff`,
-**hypomethylated** if `prob_hypo >= prob_cutoff`, otherwise
-**inconclusive**. Defaults are `delta = 0.10` (M-scale) and
-`prob_cutoff = 0.95`; both are arguments to `fit_bread()`.
+The rule: **hypermethylated** if `prob_hyper >= prob_cutoff`,
+**hypomethylated** if `prob_hypo >= prob_cutoff`, **unchanged** if
+`prob_rope >= rope_cutoff`, otherwise **inconclusive**. The three
+probabilities partition the posterior, so at any sensible cutoff exactly
+one can apply. Defaults are `delta = 0.10` (M-scale),
+`prob_cutoff = 0.95`, and `rope_cutoff = prob_cutoff`.
+
+`rope_cutoff` is separate for a reason, and the example above
+demonstrates it: **zero** regions are called `unchanged`. Concluding
+equivalence requires the whole posterior to fit inside ±`delta`, which
+is far stricter than a directional call, and this packaged dataset has
+too few samples to certify anything as flat:
+
+``` r
+summary(res$prob_rope)
+#>     Min.  1st Qu.   Median     Mean  3rd Qu.     Max.     NA's 
+#> 0.000017 0.045787 0.233455 0.244212 0.376575 0.909569        4
+```
+
+Those 385 `inconclusive` regions are genuinely *unresolved* — BREAD can
+neither detect a `delta = 0.10` effect nor exclude one. That is a more
+specific statement than a non-significant q-value, which looks the same
+whether the region is flat or the study is underpowered. A shared cutoff
+would make the equivalence class unreachable exactly where it is most
+wanted, so relax `rope_cutoff` on its own when you want to see the
+gradient — without loosening the bar for discovery.
 
 `classifications(fit)` returns just the per-region calls, and
 `posterior_draws(fit)` gives posterior samples for downstream summaries.
+
+### `delta` is on the M scale
+
+`delta = 0.10` in M-units is a beta change of about **0.017** at
+mid-methylation, and *less* toward the extremes (about 0.006 at β = 0.1)
+— the local slope dβ/dM = β(1−β)·ln2 is not constant. So a single
+beta-scale threshold does not exist; BREAD reports a per-region
+`delta_beta` instead, and `bread_delta_beta()` / `bread_delta_m()`
+convert explicitly when you want to choose `delta` from a target Δβ.
+
+``` r
+bread_delta_beta(0.10)                            # at beta = 0.5
+#> [1] 0.01732868
+bread_delta_beta(0.10, ref_beta = c(0.5, 0.2, 0.1))
+#> [1] 0.017328680 0.011090355 0.006238325
+bread_delta_m(0.02)                               # delta for a 2-point change
+#> [1] 0.1154156
+```
+
+### Re-thresholding and permutation nulls
+
+`refit_bread()` reuses a fit’s region-by-sample matrix. Changing only
+thresholds skips the model fit entirely; supplying new `colData` re-fits
+without recomputing the probe-to-region mapping, which is what makes
+label-permutation calibration practical.
+
+``` r
+# Sweep the equivalence bar for free
+table(results(refit_bread(fit, rope_cutoff = 0.80))$classification)
+
+# One draw from a label-permutation null
+cd <- as.data.frame(colData(se_ctrl))
+cd$passage <- sample(cd$passage)
+results(refit_bread(fit, colData = cd))$prob_hyper
+```
+
+### Matrix input
+
+If your pipeline hands you a matrix rather than a `SummarizedExperiment`
+— `sesame::openSesame()` does — pass it directly with `colData` and
+either `rowRanges` or a `platform` to look the manifest up through
+`sesameData`:
+
+``` r
+fit_bread(betas, features = reg, design = ~ condition,
+          colData = pheno, platform = "EPICv2")
+```
+
+The platform is never inferred from probe IDs: `cg`-numbers are shared
+across HM450, EPIC and MM285, so a wrong guess would give wrong
+coordinates silently.
 
 ### Backends
 

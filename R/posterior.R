@@ -34,6 +34,17 @@
 #' beta-scale comparison can never contradict the M-scale classification
 #' beside it. See [bread_delta_beta()].
 #'
+#' Being a first-order expansion, this is exact only in the limit of small
+#' effects, and it overstates `|mean_dbeta|` for large ones. Measured on
+#' the packaged vitamin C example (493 regions), the deviation from an
+#' exact back-transform of the same posterior mean has median 0.0005 and
+#' 99th percentile 0.021 in beta units; relative error is ~2% for
+#' `|mean_effect| < 0.25` but ~10% above 0.5. Regions whose effects are
+#' that large are unambiguous on the M scale anyway, so the approximation
+#' does not affect any call -- but do not quote `mean_dbeta` to three
+#' decimal places for a strongly changing region. Back-transform the
+#' endpoints yourself when the exact beta magnitude is the claim.
+#'
 #' @param fit A [BreadFit] (as returned by [fit_bread()]), or the internal
 #'   model list from [fit_bread_summary()] / [fit_bread_brms()].
 #' @param delta Effect-size threshold on the M-value scale. Default `0.10`.
@@ -48,6 +59,9 @@
 #'   `df`, `scale`, `prob_pos`, `prob_neg`, `prob_hyper`, `prob_hypo`,
 #'   `prob_rope`, `ref_beta`, `mean_dbeta`, `dbeta_lo`, `dbeta_hi`,
 #'   `delta_beta`, `error`.
+#'   `n` is the number of **samples** contributing to the region's fit
+#'   after dropping NAs -- not the number of probes, which is carried
+#'   per region in the `n_probes` column of the fit's `mapping`.
 #'   `df` is `NA_real_` for the empirical path. The beta-scale columns are
 #'   `NA_real_` when no region matrix is available, or when
 #'   `summary_fun = "pc1"` (PC1 scores are not M-values).

@@ -48,7 +48,7 @@ conflates *flat* with *underpowered*, which at the sample sizes typical of
 experimental epigenetics is most of your genome.
 
 BREAD reports `prob_rope`, the posterior mass inside the region of practical
-equivalence \[−`delta`, +`delta`\], and calls a region **`unchanged`** when
+equivalence spanning −`delta` to +`delta`, and calls a region **`unchanged`** when
 that mass clears `rope_cutoff`. `inconclusive` then means only what its name
 says. Being able to state that a region *demonstrably did not move* — with a
 credible ceiling on how much it could have — is the one claim a p-value is
@@ -118,7 +118,7 @@ grouping column you want summarized.
 | column | meaning |
 |---|---|
 | `region_id` | region identifier |
-| `n` | number of probes summarized in the region |
+| `n` | samples contributing to the fit (non-NA); probe counts per region live in `fit@mapping$n_probes` |
 | `mean_effect` | posterior mean methylation change (M-scale) |
 | `ci_lo`, `ci_hi` | 95% credible interval |
 | `prob_hyper` | P(effect > +delta) — evidence for hypermethylation |

@@ -25,6 +25,9 @@ A \code{data.frame} with one row per region and columns:
 \code{df}, \code{scale}, \code{prob_pos}, \code{prob_neg}, \code{prob_hyper}, \code{prob_hypo},
 \code{prob_rope}, \code{ref_beta}, \code{mean_dbeta}, \code{dbeta_lo}, \code{dbeta_hi},
 \code{delta_beta}, \code{error}.
+\code{n} is the number of \strong{samples} contributing to the region's fit
+after dropping NAs -- not the number of probes, which is carried
+per region in the \code{n_probes} column of the fit's \code{mapping}.
 \code{df} is \code{NA_real_} for the empirical path. The beta-scale columns are
 \code{NA_real_} when no region matrix is available, or when
 \code{summary_fun = "pc1"} (PC1 scores are not M-values).
@@ -70,6 +73,17 @@ contrast type, unlike the reference level of a factor. The same multiplier
 is applied to the effect, both interval bounds and \code{delta}, so the
 beta-scale comparison can never contradict the M-scale classification
 beside it. See \code{\link[=bread_delta_beta]{bread_delta_beta()}}.
+
+Being a first-order expansion, this is exact only in the limit of small
+effects, and it overstates \verb{|mean_dbeta|} for large ones. Measured on
+the packaged vitamin C example (493 regions), the deviation from an
+exact back-transform of the same posterior mean has median 0.0005 and
+99th percentile 0.021 in beta units; relative error is ~2\% for
+\verb{|mean_effect| < 0.25} but ~10\% above 0.5. Regions whose effects are
+that large are unambiguous on the M scale anyway, so the approximation
+does not affect any call -- but do not quote \code{mean_dbeta} to three
+decimal places for a strongly changing region. Back-transform the
+endpoints yourself when the exact beta magnitude is the claim.
 }
 
 \examples{
