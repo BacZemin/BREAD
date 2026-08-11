@@ -3,9 +3,16 @@
 \name{BREAD-methods}
 \alias{BREAD-methods}
 \alias{show,BreadFit-method}
+\alias{show,BreadResults-method}
 \title{Methods for \link{BreadFit} and \link{BreadResults}}
 \usage{
 \S4method{show}{BreadFit}(object)
+
+\S4method{show}{BreadResults}(object)
+}
+\value{
+\code{show()} is called for its side effect of printing a summary to
+the console and returns its argument invisibly.
 }
 \description{
 Methods for \link{BreadFit} and \link{BreadResults}

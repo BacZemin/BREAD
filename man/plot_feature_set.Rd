@@ -19,3 +19,17 @@ Bar chart of classification counts across all fitted regions. When
 \code{feature_class_col} is supplied, bars are stacked by feature class so users
 can see, e.g., how PRC / CGI / LAD subsets partition into hyper vs. hypo.
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+# `feature_class_col` names a column of the fit's probe-to-region
+# mapping, so it has to be passed to fit_bread() first.
+fit <- fit_bread(se_ctrl, reg, ~ passage,
+                 feature_class_col = "feature_class")
+
+plot_feature_set(fit, feature_class_col = "feature_class")
+}

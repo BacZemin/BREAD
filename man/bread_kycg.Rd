@@ -11,7 +11,9 @@ bread_kycg(
   platform = c("EPIC", "EPICv2", "HM450", "MM285"),
   universe = NULL,
   alternative = "greater",
-  include_genes = FALSE
+  include_genes = FALSE,
+  mtc_by_group = TRUE,
+  mtc_method = "fdr"
 )
 }
 \arguments{
@@ -34,6 +36,15 @@ Use a single string to run one.}
 \item{alternative}{\code{"greater"} (default), \code{"two.sided"}, or \code{"less"}.}
 
 \item{include_genes}{Passed through to \code{\link[knowYourCG:testEnrichment]{knowYourCG::testEnrichment()}}.}
+
+\item{mtc_by_group}{Correct for multiple testing within each knowledgebase
+group rather than across all of them. Passed to
+\code{knowYourCG::testEnrichment()} when the installed version supports it
+(added after Bioconductor 3.20) and ignored with a message when it does
+not.}
+
+\item{mtc_method}{Multiple-testing correction method, as for
+\code{\link[stats:p.adjust]{stats::p.adjust()}}. Same version caveat as \code{mtc_by_group}.}
 }
 \value{
 A tidy \code{data.frame} with one row per tested set, containing a
@@ -58,10 +69,21 @@ to override.
 }
 
 \examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+table(results(fit)$classification)
+
+# The enrichment call downloads KnowYourCG reference databases, so it is
+# not run here.
 \dontrun{
-  fit <- fit_bread(se, features, ~ group)
-  enr <- bread_kycg(fit, platform = "EPIC")
-  head(enr[enr$FDR < 0.01, ])
+enr <- bread_kycg(fit, which = "hypermethylated",
+                  platform = "EPICv2")
+head(enr[enr$FDR < 0.01, ])
 }
 
 }

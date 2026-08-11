@@ -14,9 +14,9 @@ slots that downstream packages can depend on.
 \describe{
 \item{\code{call}}{The original \code{fit_bread()} call.}
 
-\item{\code{params}}{List of parameters used (delta, prob_cutoff, summary_fun,
-mode, backend, contrast, min_probes, feature_class_col, iter, chains,
-cores, seed).}
+\item{\code{params}}{List of parameters used (contrast, delta, prob_cutoff,
+rope_cutoff, ci, ref_beta, summary_fun, backend, min_probes,
+feature_class_col).}
 
 \item{\code{mode}}{\code{"summary"} or \code{"hierarchical"}.}
 
@@ -26,14 +26,37 @@ cores, seed).}
 
 \item{\code{mapping}}{Probe-to-region data frame from \code{\link[=map_probes_to_features]{map_probes_to_features()}}.}
 
-\item{\code{features}}{\code{GRanges} of regions that survived \code{min_probes} filtering.}
+\item{\code{features}}{\code{GRanges} of the ranges belonging to regions that survived
+\code{min_probes} filtering. When several ranges share a \code{region_id} this is
+longer than \code{nrow(results(fit))}; \code{diagnostics$n_features_out} is the
+region count.}
 
-\item{\code{model}}{Internal fit object from \code{\link[=fit_bread_summary]{fit_bread_summary()}}.}
+\item{\code{model}}{Internal fit object from \code{\link[=fit_bread_summary]{fit_bread_summary()}} or
+\code{\link[=fit_bread_brms]{fit_bread_brms()}}. Both backends return the same named list:
+\code{fits}, \code{design_matrix}, \code{coef_names}, \code{contrast}, \code{contrast_idx},
+\code{region_ids}, \code{prior}, \code{region_mat}, \code{design}, \code{coldata}. This shape is
+relied on by \code{\link[=refit_bread]{refit_bread()}}, \code{\link[=posterior_summary]{posterior_summary()}} and
+\code{\link[=plot_region_data]{plot_region_data()}}; treat it as part of the interface.}
 
 \item{\code{posterior}}{Per-region posterior summary data frame.}
 
 \item{\code{results}}{Per-region data frame with classification column.}
 
-\item{\code{diagnostics}}{List with backend, seed, feature counts, failure counts.}
+\item{\code{diagnostics}}{List with backend, feature counts, dropped regions,
+failure counts, timestamp, and \code{refit_of} when produced by
+\code{\link[=refit_bread]{refit_bread()}}.}
 }}
 
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+fit
+
+slotNames(fit)
+methods::slot(fit, "diagnostics")
+}

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage question
+    url: https://support.bioconductor.org
+    about: >
+      For "how do I ...?" questions, please post on the Bioconductor support
+      site and tag it BREAD. Questions there reach more people and stay
+      searchable.
+  - name: Package documentation
+    url: https://baczemin.github.io/BREAD/
+    about: Reference index, vignettes, and the getting-started guide.

@@ -1,5 +1,8 @@
 #' Methods for [BreadFit] and [BreadResults]
 #'
+#' @return `show()` is called for its side effect of printing a summary to
+#'   the console and returns its argument invisibly.
+#'
 #' @name BREAD-methods
 #' @keywords internal
 NULL
@@ -9,6 +12,18 @@ NULL
 #' @param object A [BreadFit].
 #' @param ... Unused.
 #' @return A data frame with one row per region.
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' fit <- fit_bread(se_ctrl, reg, ~ passage)
+#'
+#' res <- results(fit)
+#' head(res)
+#' colnames(res)
 #' @export
 setGeneric("results", function(object, ...) standardGeneric("results"))
 
@@ -24,6 +39,18 @@ setMethod("results", "BreadFit", function(object, ...) {
 #' @return A named character vector of classifications per region
 #'   (names are region IDs, values are one of `"hypermethylated"`,
 #'   `"hypomethylated"`, `"inconclusive"`).
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' fit <- fit_bread(se_ctrl, reg, ~ passage)
+#'
+#' cls <- classifications(fit)
+#' head(cls)
+#' table(cls)
 #' @export
 setGeneric("classifications",
            function(object, ...) standardGeneric("classifications"))
@@ -50,6 +77,22 @@ setMethod("classifications", "BreadFit", function(object, ...) {
 #' @return A long `data.frame` with columns `region_id`, `draw`, `value`.
 #'
 #' @importFrom stats rt
+#' @importFrom withr with_seed
+#' @examples
+#' suppressPackageStartupMessages(library(SummarizedExperiment))
+#'
+#' se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+#' reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+#' se_ctrl <- se[, se$condition == "ctrl"]
+#'
+#' fit <- fit_bread(se_ctrl, reg, ~ passage)
+#'
+#' # Always name the region(s) you want -- the default (NULL) draws from
+#' # every region, which is `n` x n_regions rows.
+#' rid <- results(fit)$region_id[1]
+#' d <- posterior_draws(fit, region_id = rid, n = 500L, seed = 1L)
+#' head(d)
+#' quantile(d$value, c(0.025, 0.5, 0.975))
 #' @export
 setGeneric("posterior_draws",
            function(object, region_id = NULL, ...) standardGeneric("posterior_draws"))
@@ -57,7 +100,6 @@ setGeneric("posterior_draws",
 #' @rdname posterior_draws
 setMethod("posterior_draws", "BreadFit",
   function(object, region_id = NULL, n = 4000L, seed = NULL, ...) {
-    if (!is.null(seed)) set.seed(seed)
     fits <- object@model$fits
     if (is.null(fits))
       stop("BreadFit has no `model$fits`; was fit_bread() run successfully?",
@@ -70,7 +112,7 @@ setMethod("posterior_draws", "BreadFit",
       stop("region_id(s) not found: ",
            paste(shQuote(unknown), collapse = ", "), call. = FALSE)
 
-    rows <- lapply(target, function(rid) {
+    draw_one <- function(rid) {
       f <- fits[[rid]]
       if (!is.na(f$error))
         return(data.frame(region_id = rid, draw = seq_len(n),
@@ -92,8 +134,12 @@ setMethod("posterior_draws", "BreadFit",
       data.frame(region_id = rid, draw = seq_len(n),
                  value = mu + s * stats::rt(n, df = nu),
                  stringsAsFactors = FALSE)
-    })
-    do.call(rbind, rows)
+    }
+
+    # with_seed() restores the caller's RNG state on exit; a bare
+    # set.seed() would leak this reseed into the user's session.
+    draw_all <- function() do.call(rbind, lapply(target, draw_one))
+    if (is.null(seed)) draw_all() else withr::with_seed(seed, draw_all())
   }
 )
 
@@ -111,11 +157,15 @@ setMethod("show", "BreadFit", function(object) {
       "\n")
   cat("  delta      :", object@params$delta, "\n")
   cat("  prob_cutoff:", object@params$prob_cutoff, "\n")
+  cat("  rope_cutoff:", object@params$rope_cutoff %||% object@params$prob_cutoff, "\n")
+  cat("  ci         :", object@params$ci %||% 0.95, "\n")
+  # Count distinct regions, not ranges: `features` may hold many ranges per
+  # region_id, which previously printed as e.g. "788 (of 790 input)" for what
+  # was really 30 regions built from 790 probes.
   cat("  n_regions  :",
-      if (length(object@features) > 0L) length(object@features) else 0L,
+      object@diagnostics$n_features_out %||% 0L,
       "(of ",
-      if (!is.null(object@diagnostics$n_features_in))
-        object@diagnostics$n_features_in else NA,
+      object@diagnostics$n_features_in %||% NA,
       " input)\n")
   res <- object@results
   if (!is.null(res) && "classification" %in% colnames(res)) {
@@ -123,6 +173,23 @@ setMethod("show", "BreadFit", function(object) {
     cat("  classifications:\n")
     for (nm in names(tab))
       cat("    ", format(nm, width = 17L), tab[[nm]], "\n", sep = "")
+  }
+  invisible(object)
+})
+
+#' @rdname BREAD-methods
+#' @export
+setMethod("show", "BreadResults", function(object) {
+  tab <- object@table
+  cat("<BreadResults>\n")
+  cat("  n_regions  :", if (is.null(tab)) 0L else nrow(tab), "\n")
+  cat("  delta      :", object@params$delta %||% NA, "\n")
+  cat("  prob_cutoff:", object@params$prob_cutoff %||% NA, "\n")
+  if (!is.null(tab) && "classification" %in% colnames(tab)) {
+    cat("  classifications:\n")
+    counts <- table(tab$classification)
+    for (nm in names(counts))
+      cat("    ", format(nm, width = 17L), counts[[nm]], "\n", sep = "")
   }
   invisible(object)
 })

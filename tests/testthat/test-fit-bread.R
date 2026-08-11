@@ -48,7 +48,7 @@ test_that("results() and classifications() accessors return expected objects", {
                                     min_probes = 3L))
   r <- results(fit)
   expect_s3_class(r, "data.frame")
-  expect_true(all(c("region_id","classification","p_gt_delta","p_lt_neg_delta")
+  expect_true(all(c("region_id","classification","prob_hyper","prob_hypo")
                   %in% colnames(r)))
   cls <- classifications(fit)
   expect_type(cls, "character")

@@ -5,6 +5,16 @@
 \alias{BreadResults}
 \alias{BreadResults-class}
 \title{The \code{BreadResults} S4 class}
+\usage{
+BreadResults(fit)
+}
+\arguments{
+\item{fit}{A \link{BreadFit}, as returned by \code{\link[=fit_bread]{fit_bread()}}.}
+}
+\value{
+\code{BreadResults()} returns a \code{BreadResults} object wrapping the
+region-level results table and the classification parameters used.
+}
 \description{
 Structured result table wrapper. Reserved for downstream reporting helpers
 that may want a dedicated class rather than a bare data.frame.
@@ -17,3 +27,17 @@ that may want a dedicated class rather than a bare data.frame.
 \item{\code{params}}{List of classification parameters.}
 }}
 
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+
+br <- BreadResults(fit)
+br
+head(methods::slot(br, "table"))
+
+}

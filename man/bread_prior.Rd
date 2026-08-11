@@ -29,3 +29,11 @@ Default prior for \code{fit_bread_summary()}: weakly-informative Normal-Inverse-
 The inverse-gamma hyperparameters default to \code{a0 = b0 = 0.001}, which is
 approximately Jeffreys.
 }
+\examples{
+# Defaults: weak coefficient precision, near-flat inverse-gamma on the
+# residual variance.
+bread_prior()
+
+# A tighter prior, e.g. when regions are small and n is low
+bread_prior(lambda0 = 0.05, a0 = 0.01, b0 = 0.01)
+}

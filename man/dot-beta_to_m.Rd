@@ -6,6 +6,14 @@
 \usage{
 .beta_to_m(beta, eps = 1e-06)
 }
+\arguments{
+\item{beta}{Numeric vector of beta values.}
+
+\item{eps}{Clamping tolerance keeping values off the 0/1 asymptotes.}
+}
+\value{
+Numeric vector of M-values.
+}
 \description{
 Beta -> M transform, clamped away from 0/1.
 }

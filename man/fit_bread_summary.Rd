@@ -4,7 +4,14 @@
 \alias{fit_bread_summary}
 \title{Fit BREAD summary-mode Bayesian model}
 \usage{
-fit_bread_summary(region_mat, coldata, design, contrast, prior = NULL)
+fit_bread_summary(
+  region_mat,
+  coldata,
+  design,
+  contrast,
+  prior = NULL,
+  df_mode = c("conjugate", "residual")
+)
 }
 \arguments{
 \item{region_mat}{Region-by-sample numeric matrix (from \code{\link[=summarize_features]{summarize_features()}}).}
@@ -16,6 +23,9 @@ fit_bread_summary(region_mat, coldata, design, contrast, prior = NULL)
 \item{contrast}{Character coefficient name of interest.}
 
 \item{prior}{A \code{\link[=bread_prior]{bread_prior()}} object (or \code{NULL} for defaults).}
+
+\item{df_mode}{\code{"conjugate"} (default) or \code{"residual"}. See the
+\emph{Degrees of freedom} section.}
 }
 \value{
 A list with:
@@ -26,6 +36,7 @@ A list with:
 \item \code{contrast}, \code{contrast_idx}: contrast name and its column index in \code{X}
 \item \code{region_ids}: rownames of \code{region_mat}
 \item \code{prior}: the prior applied (with \code{mu0}/\code{Lambda0} filled in)
+\item \code{df_mode}: the degrees-of-freedom convention used
 }
 }
 \description{
@@ -43,6 +54,33 @@ For region r and sample i:
 Posterior:
 \deqn{\Lambda_n = X^\top X + \Lambda_0,\quad \mu_n = \Lambda_n^{-1}(X^\top y + \Lambda_0 \mu_0),}
 \deqn{a_n = a_0 + n/2,\quad b_n = b_0 + \tfrac{1}{2}(y^\top y + \mu_0^\top \Lambda_0 \mu_0 - \mu_n^\top \Lambda_n \mu_n).}
+}
+
+\section{Degrees of freedom (\code{df_mode})}{
+
+The marginal posterior of a coefficient is a Student-t with
+\eqn{\nu = 2 a_n} degrees of freedom. Under the textbook conjugate update
+\eqn{a_n = a_0 + n/2}, so \eqn{\nu} depends on the sample size \strong{only} and
+never on the number of coefficients \eqn{p}. With the weak default prior
+(\eqn{\Lambda_0 = 0.01 I}) that overstates precision: the reference-prior
+answer, and the one \code{lm()} gives, is \eqn{n - p}. The discrepancy is exactly
+a factor \eqn{\sqrt{n/(n-p)}} on the posterior scale, so it grows with
+\eqn{p/n} and bites hardest on interaction designs at small \eqn{n}.
+\itemize{
+\item \code{"conjugate"} (default): \eqn{a_n = a_0 + n/2}. The literal conjugate
+result; correct given the stated prior, but optimistic when that prior was
+only ever meant to be uninformative.
+\item \code{"residual"}: \eqn{a_n = a_0 + (n - p)/2}. Reproduces the classical
+\eqn{t_{n-p}} marginal, matching \code{lm()} confidence intervals as
+\eqn{\Lambda_0 \to 0}. Recommended whenever the prior is weak and
+\eqn{p > 1}.
+}
+
+Regions with \code{n <= p} carry no residual information about
+\eqn{\sigma^2}: the residuals are identically zero, \code{b_n} collapses to
+\code{b0}, and the posterior scale collapses with it. Such regions are dropped
+(\code{error = "n <= number of coefficients"}) under \strong{both} modes rather than
+returned with a spuriously tight interval.
 }
 
 \keyword{internal}

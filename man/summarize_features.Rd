@@ -50,3 +50,19 @@ M-value interpretation under \code{"pc1"}.
 }
 }
 
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+mapping <- map_probes_to_features(se_ctrl, reg)
+
+# As above, the packaged assay is "betas" on the beta scale; values
+# are converted to M-values internally before summarizing.
+mat <- summarize_features(se_ctrl, mapping,
+                          assay_name = "betas", input_scale = "Beta")
+dim(mat)
+mat[1:3, 1:3]
+}

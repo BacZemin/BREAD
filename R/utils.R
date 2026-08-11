@@ -1,10 +1,17 @@
 #' Internal utilities
 #'
+#' @return Varies by helper: the scale transforms return numeric vectors,
+#'   the detection helpers return a character scalar.
+#'
 #' @name BREAD-utils
 #' @keywords internal
 NULL
 
 #' Beta -> M transform, clamped away from 0/1.
+#'
+#' @param beta Numeric vector of beta values.
+#' @param eps Clamping tolerance keeping values off the 0/1 asymptotes.
+#' @return Numeric vector of M-values.
 #' @keywords internal
 .beta_to_m <- function(beta, eps = 1e-6) {
   beta <- pmin(pmax(beta, eps), 1 - eps)
@@ -12,6 +19,9 @@ NULL
 }
 
 #' M -> Beta transform.
+#'
+#' @param m Numeric vector of M-values.
+#' @return Numeric vector of beta values in (0, 1).
 #' @keywords internal
 .m_to_beta <- function(m) {
   2^m / (2^m + 1)
@@ -31,11 +41,15 @@ NULL
   "#122451"   # deep navy
 )
 
-# Classification palette (warm = hyper gain, cool = hypo loss, neutral = inconclusive)
+# Classification palette. Warm = hyper gain, cool = hypo loss, olive =
+# a confident no-change call, grey = no information. `unchanged` keeps a
+# saturated colour because it is a finding; `inconclusive` is deliberately
+# desaturated because the absence of information should look like it.
 .col_classification <- c(
   hypermethylated = "#ce4441",
   hypomethylated  = "#004f63",
-  inconclusive    = "#859b6c"
+  unchanged       = "#859b6c",
+  inconclusive    = "#BFBFBF"
 )
 
 # Binary group palette — used by plot_region_data() for the contrast variable
@@ -48,11 +62,16 @@ NULL
 #' dependency on the `MetBrewer` package.
 #'
 #' @param which One of:
-#'   - `"classification"` : named 3-vector for hyper/hypo/inconclusive
+#'   - `"classification"` : named 4-vector for
+#'     hyper / hypo / unchanged / inconclusive
 #'   - `"group"`          : unnamed 2-vector for binary contrast plots
 #'   - `"cross"`          : full 9-color palette
 #'
 #' @return A character vector of hex colors (named where applicable).
+#' @examples
+#' bread_colors("classification")
+#' bread_colors("group")
+#' bread_colors("cross")
 #' @export
 bread_colors <- function(which = c("classification", "group", "cross")) {
   which <- match.arg(which)

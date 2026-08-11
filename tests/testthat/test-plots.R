@@ -1,6 +1,7 @@
 test_that("bread_colors() returns expected palettes", {
   cl <- bread_colors("classification")
-  expect_named(cl, c("hypermethylated", "hypomethylated", "inconclusive"))
+  expect_named(cl, c("hypermethylated", "hypomethylated",
+                     "unchanged", "inconclusive"))
   expect_match(cl, "^#[0-9a-fA-F]{6}$")
 
   gr <- bread_colors("group")

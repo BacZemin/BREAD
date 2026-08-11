@@ -6,6 +6,12 @@
 \usage{
 .m_to_beta(m)
 }
+\arguments{
+\item{m}{Numeric vector of M-values.}
+}
+\value{
+Numeric vector of beta values in (0, 1).
+}
 \description{
 M -> Beta transform.
 }

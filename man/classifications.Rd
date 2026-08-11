@@ -22,3 +22,16 @@ A named character vector of classifications per region
 \description{
 Extract region classifications from a \link{BreadFit}
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+
+cls <- classifications(fit)
+head(cls)
+table(cls)
+}

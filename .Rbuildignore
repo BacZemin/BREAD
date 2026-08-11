@@ -7,3 +7,8 @@
 ^_pkgdown\.yml$
 ^pkgdown$
 ^tools$
+^data-raw$
+^build_preview$
+^CLAUDE\.md$
+^README\.Rmd$
+^\.git$

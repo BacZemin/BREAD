@@ -3,6 +3,9 @@
 \name{BREAD-plots}
 \alias{BREAD-plots}
 \title{BREAD plotting helpers}
+\value{
+Each of the three functions returns a \link[ggplot2:ggplot]{ggplot2::ggplot} object.
+}
 \description{
 Three publication-oriented plot functions for \link{BreadFit} output:
 \code{\link[=plot_region_posterior]{plot_region_posterior()}}, \code{\link[=plot_region_data]{plot_region_data()}}, and \code{\link[=plot_feature_set]{plot_feature_set()}}.

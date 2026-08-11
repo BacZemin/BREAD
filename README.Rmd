@@ -1,0 +1,255 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file, then run
+     devtools::build_readme() and commit both files. -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# BREAD <a href="https://baczemin.github.io/BREAD/"><img src="man/figures/logo.png" align="right" height="139" alt="BREAD website" /></a>
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/BacZemin/BREAD/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/BacZemin/BREAD/actions/workflows/R-CMD-check.yaml)
+[![bioc-check](https://github.com/BacZemin/BREAD/actions/workflows/bioc-check.yaml/badge.svg)](https://github.com/BacZemin/BREAD/actions/workflows/bioc-check.yaml)
+[![pkgdown](https://github.com/BacZemin/BREAD/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/BacZemin/BREAD/actions/workflows/pkgdown.yaml)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Docs](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://baczemin.github.io/BREAD/)
+<!-- badges: end -->
+
+**BREAD** (Bayesian Region-specific DNA methylation inference) provides
+targeted Bayesian inference for **predefined** DNA methylation regions from
+array data — a `SummarizedExperiment`, or a plain probe-by-sample matrix as
+`sesame::openSesame()` returns. For each region you supply, BREAD fits a
+Bayesian model, computes posterior probabilities of methylation change, and
+classifies the region as **hypermethylated**, **hypomethylated**,
+**unchanged**, or **inconclusive** at user-configurable effect-size and
+probability thresholds.
+
+Unlike genome-wide DMR callers that scan for regions, BREAD answers a
+different question: *given regions I already care about (PRC2 targets, CGIs,
+LADs, a chromHMM state, a custom BED), what is the posterior evidence for
+methylation change in each one, and how confident am I?* Output is a
+per-region posterior — effect size, credible interval, and probabilities —
+not just a p-value.
+
+### The `unchanged` class
+
+Most tools give you two states: significant, and not-significant. That
+conflates *flat* with *underpowered*, which at the sample sizes typical of
+experimental epigenetics is most of your genome.
+
+BREAD reports `prob_rope`, the posterior mass inside the region of practical
+equivalence spanning −`delta` to +`delta`, and calls a region **`unchanged`** when
+that mass clears `rope_cutoff`. `inconclusive` then means only what its name
+says. Being able to state that a region *demonstrably did not move* — with a
+credible ceiling on how much it could have — is the one claim a p-value is
+structurally unable to make, and it is often the claim a pathway or cascade
+argument actually needs.
+
+## Installation
+
+BREAD is in development. Install the latest version from GitHub:
+
+``` r
+# install.packages("pak")
+pak::pak("BacZemin/BREAD")
+
+# or with remotes:
+# install.packages("remotes")
+remotes::install_github("BacZemin/BREAD")
+```
+
+BREAD depends on Bioconductor packages (`SummarizedExperiment`,
+`GenomicRanges`, `S4Vectors`). The optional `brms` backend additionally needs
+`brms` plus a working Stan toolchain.
+
+## Example
+
+BREAD ships a small packaged dataset so you can run the whole pipeline out of
+the box: 8 EPICv2 arrays from a fibroblast passage-aging × vitamin C
+experiment, plus 500 predefined regions spanning five feature classes
+(PMD, PRC-CGI, bivalent, ...).
+
+```{r example, message = FALSE}
+library(BREAD)
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+
+# Which regions change methylation with passage in the control fibroblasts?
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(
+  se_ctrl,
+  features          = reg,
+  design            = ~ passage,
+  feature_class_col = "feature_class"
+)
+
+fit                     # summary: n regions, backend, classification counts
+```
+
+```{r example-results}
+res <- results(fit)     # one row per region
+table(res$classification)
+```
+
+That is the whole pattern: a `SummarizedExperiment` of array data, a
+`GRanges` of regions to test, and a model formula referencing columns of
+`colData(se)`. `fit_bread()` auto-detects the assay and whether values are
+on the beta or M scale, so the three arguments above are usually all you
+need. `feature_class_col` is optional — supply it when your regions carry a
+grouping column you want summarized.
+
+### Reading the results
+
+`results(fit)` returns one row per region:
+
+| column | meaning |
+|---|---|
+| `region_id` | region identifier |
+| `n` | samples contributing to the fit (non-NA); probe counts per region live in `fit@mapping$n_probes` |
+| `mean_effect` | posterior mean methylation change (M-scale) |
+| `ci_lo`, `ci_hi` | 95% credible interval |
+| `prob_hyper` | P(effect > +delta) — evidence for hypermethylation |
+| `prob_hypo` | P(effect < -delta) — evidence for hypomethylation |
+| `prob_rope` | P(\|effect\| <= delta) — evidence of *no* change |
+| `mean_dbeta`, `dbeta_lo`, `dbeta_hi` | the effect and interval on the beta scale |
+| `ref_beta`, `delta_beta` | the anchor used for that translation, and `delta` in beta units |
+| `classification` | `hypermethylated` / `hypomethylated` / `unchanged` / `inconclusive` |
+
+```{r results-head}
+head(res[, c("region_id", "n", "mean_effect", "ci_lo", "ci_hi",
+             "prob_rope", "classification")])
+```
+
+The rule: **hypermethylated** if `prob_hyper >= prob_cutoff`,
+**hypomethylated** if `prob_hypo >= prob_cutoff`, **unchanged** if
+`prob_rope >= rope_cutoff`, otherwise **inconclusive**. The three
+probabilities partition the posterior, so at any sensible cutoff exactly one
+can apply. Defaults are `delta = 0.10` (M-scale), `prob_cutoff = 0.95`, and
+`rope_cutoff = prob_cutoff`.
+
+`rope_cutoff` is separate for a reason, and the example above demonstrates it:
+**zero** regions are called `unchanged`. Concluding equivalence requires the
+whole posterior to fit inside ±`delta`, which is far stricter than a
+directional call, and this packaged dataset has too few samples to certify
+anything as flat:
+
+```{r rope-distribution}
+summary(res$prob_rope)
+```
+
+Those 385 `inconclusive` regions are genuinely *unresolved* — BREAD can
+neither detect a `delta = 0.10` effect nor exclude one. That is a more
+specific statement than a non-significant q-value, which looks the same
+whether the region is flat or the study is underpowered. A shared cutoff
+would make the equivalence class unreachable exactly where it is most
+wanted, so relax `rope_cutoff` on its own when you want to see the
+gradient — without loosening the bar for discovery.
+
+`classifications(fit)` returns just the per-region calls, and
+`posterior_draws(fit)` gives posterior samples for downstream summaries.
+
+### `delta` is on the M scale
+
+`delta = 0.10` in M-units is a beta change of about **0.017** at
+mid-methylation, and *less* toward the extremes (about 0.006 at β = 0.1) —
+the local slope dβ/dM = β(1−β)·ln2 is not constant. So a single beta-scale
+threshold does not exist; BREAD reports a per-region `delta_beta` instead,
+and `bread_delta_beta()` / `bread_delta_m()` convert explicitly when you want
+to choose `delta` from a target Δβ.
+
+```{r delta-scale}
+bread_delta_beta(0.10)                            # at beta = 0.5
+bread_delta_beta(0.10, ref_beta = c(0.5, 0.2, 0.1))
+bread_delta_m(0.02)                               # delta for a 2-point change
+```
+
+### Re-thresholding and permutation nulls
+
+`refit_bread()` reuses a fit's region-by-sample matrix. Changing only
+thresholds skips the model fit entirely; supplying new `colData` re-fits
+without recomputing the probe-to-region mapping, which is what makes
+label-permutation calibration practical.
+
+```{r refit, eval = FALSE}
+# Sweep the equivalence bar for free
+table(results(refit_bread(fit, rope_cutoff = 0.80))$classification)
+
+# One draw from a label-permutation null
+cd <- as.data.frame(colData(se_ctrl))
+cd$passage <- sample(cd$passage)
+results(refit_bread(fit, colData = cd))$prob_hyper
+```
+
+### Matrix input
+
+If your pipeline hands you a matrix rather than a `SummarizedExperiment` —
+`sesame::openSesame()` does — pass it directly with `colData` and either
+`rowRanges` or a `platform` to look the manifest up through `sesameData`:
+
+```{r matrix-input, eval = FALSE}
+fit_bread(betas, features = reg, design = ~ condition,
+          colData = pheno, platform = "EPICv2")
+```
+
+The platform is never inferred from probe IDs: `cg`-numbers are shared across
+HM450, EPIC and MM285, so a wrong guess would give wrong coordinates silently.
+
+### Backends
+
+- `backend = "conjugate"` (default) — analytic Normal-Inverse-Gamma
+  posterior, no MCMC. Hundreds of regions fit in well under a second.
+- `backend = "brms"` — full MCMC via Stan; compiles once, then reuses the
+  compiled model across regions. Use when you need the flexibility of a
+  full Bayesian fit.
+
+### KnowYourCG enrichment
+
+`bread_kycg()` takes the probes in your hyper- or hypo-classified regions
+and runs `knowYourCG::testEnrichment()` against curated CpG databases, so
+you can ask what genomic features your called regions are enriched for.
+
+## Vignettes
+
+Two worked examples on real data (rendered on the
+[documentation site](https://baczemin.github.io/BREAD/)):
+
+- **Getting started** (`bread-intro`) — TCGA HM450 matched normal/tumour
+  pairs over chromHMM chromatin-state regions, end-to-end through
+  `bread_kycg()`.
+- **Vitamin C EPICv2** (`bread-vitc`) — the packaged fibroblast
+  passage-aging × vitamin C experiment, recovering classic PMD-hypo /
+  PRC-CGI-hyper region signatures.
+
+## Status
+
+Milestone 1 (MVP) is complete: the full `fit_bread()` pipeline, conjugate
+and brms backends, S4 classes with accessors, plotting helpers, KYCG
+integration, two real-data vignettes, and a live pkgdown site. Partial
+pooling across regions, feature-class priors, random-effects designs, and
+contrast vectors are on the roadmap. See `NEWS.md` for the changelog.
+
+## Citation
+
+BREAD does not have an associated publication yet. For now, cite the
+package itself:
+
+```{r citation, comment = ""}
+citation("BREAD")
+```
+
+## License
+
+MIT © Jaemin Park. See `LICENSE`.

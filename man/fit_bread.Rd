@@ -5,12 +5,18 @@
 \title{Fit a Bayesian region-specific methylation model}
 \usage{
 fit_bread(
-  se,
+  x,
   features,
   design,
   contrast = NULL,
+  colData = NULL,
+  rowRanges = NULL,
+  platform = NULL,
   delta = 0.1,
   prob_cutoff = 0.95,
+  rope_cutoff = prob_cutoff,
+  ci = 0.95,
+  ref_beta = NULL,
   min_probes = 3L,
   feature_class_col = NULL,
   summary_fun = c("mean", "median", "weighted_mean", "pc1"),
@@ -18,22 +24,46 @@ fit_bread(
   input_scale = NULL,
   backend = c("conjugate", "brms"),
   prior = NULL,
+  df_mode = c("conjugate", "residual"),
   ...
 )
 }
 \arguments{
-\item{se}{A \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment} with a methylation assay.}
+\item{x}{A \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment} with a methylation
+assay, or a probe-by-sample \code{matrix} (with \code{colData} and either
+\code{rowRanges} or \code{platform}), or a \code{list(betas =, sampleInfo =)} as
+returned by \code{sesameData}. See \code{\link[=bread_se]{bread_se()}}.}
 
-\item{features}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} of user-defined regions.}
+\item{features}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} of user-defined regions. Several
+ranges may share a name to define one region as an exact probe set.}
 
 \item{design}{A one-sided formula giving the model design, e.g. \code{~ group + sex}.}
 
 \item{contrast}{Character coefficient name of interest. If \code{NULL} (default),
 the first non-intercept coefficient is used and a message is emitted.}
 
-\item{delta}{Effect-size threshold on the M-value scale. Default \code{0.10}.}
+\item{colData, rowRanges, platform}{Only for matrix input: sample metadata,
+probe coordinates, and the array platform for a \code{sesameData} manifest
+lookup. Passing any of them alongside a \code{SummarizedExperiment} is an
+error. See \code{\link[=bread_se]{bread_se()}}.}
 
-\item{prob_cutoff}{Posterior probability cutoff for classification. Default \code{0.95}.}
+\item{delta}{Effect-size threshold on the M-value scale. Default \code{0.10}
+(a beta change of roughly 0.017 at mid-methylation, less toward the
+extremes -- see \code{\link[=bread_delta_beta]{bread_delta_beta()}}).}
+
+\item{prob_cutoff}{Posterior probability cutoff for a directional
+(hyper/hypo) call. Default \code{0.95}.}
+
+\item{rope_cutoff}{Posterior probability cutoff for an \code{unchanged}
+(equivalence) call. Defaults to \code{prob_cutoff}; see \code{\link[=classify_regions]{classify_regions()}}
+for why it is worth setting independently.}
+
+\item{ci}{Credible-interval mass reported in \code{ci_lo}/\code{ci_hi}. Default
+\code{0.95}. Independent of \code{prob_cutoff}.}
+
+\item{ref_beta}{Reference methylation level(s) anchoring the beta-scale
+columns. \code{NULL} (default) uses each region's own mean. See
+\code{\link[=posterior_summary]{posterior_summary()}}.}
 
 \item{min_probes}{Minimum probes per region. Default \code{3}.}
 
@@ -51,6 +81,15 @@ the first non-intercept coefficient is used and a message is emitted.}
 
 \item{prior}{Optional \code{\link[=bread_prior]{bread_prior()}} object (conjugate backend only).}
 
+\item{df_mode}{Degrees-of-freedom convention for the conjugate backend:
+\code{"conjugate"} (default, \eqn{a_n = a_0 + n/2}) or \code{"residual"}
+(\eqn{a_n = a_0 + (n-p)/2}), which reproduces the classical
+\eqn{t_{n-p}} marginal and matches \code{lm()} intervals under a weak prior.
+The default overstates precision by a factor \eqn{\sqrt{n/(n-p)}} on the
+posterior scale — negligible when \eqn{p \ll n}, material for interaction
+designs at small \eqn{n}. Ignored by \code{backend = "brms"}, which samples
+\eqn{\sigma^2} directly. See \code{\link[=fit_bread_summary]{fit_bread_summary()}}.}
+
 \item{...}{Additional arguments forwarded to the backend. For
 \code{backend = "brms"}, this accepts \code{iter}, \code{chains}, \code{cores}, \code{seed}, etc.}
 }
@@ -64,7 +103,8 @@ with a methylation assay and a \link[GenomicRanges:GRanges-class]{GenomicRanges:
 regions, BREAD maps probes to regions, summarizes them per sample, and
 fits Bayesian region-level models to produce posterior probabilities of
 directional methylation change under the contrast of interest. Regions
-are classified as hypermethylated, hypomethylated, or inconclusive.
+are classified as hypermethylated, hypomethylated, unchanged (posterior
+concentrated inside the region of practical equivalence) or inconclusive.
 }
 \section{Minimal call}{
 
@@ -91,6 +131,22 @@ updates); MCMC controls \code{iter}, \code{chains}, \code{cores}, \code{seed} ca
 through \code{...} to \code{fit_bread_brms()}.
 }
 
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+# Which of the 500 predefined regions change methylation with passage
+# in the control (untreated) fibroblasts?
+fit <- fit_bread(se_ctrl, reg, ~ passage,
+                 feature_class_col = "feature_class")
+fit
+
+head(results(fit))
+table(results(fit)$classification)
+}
 \seealso{
 \code{\link[=validate_bread_input]{validate_bread_input()}}, \code{\link[=map_probes_to_features]{map_probes_to_features()}},
 \code{\link[=summarize_features]{summarize_features()}}, \code{\link[=posterior_summary]{posterior_summary()}}, \code{\link[=classify_regions]{classify_regions()}}

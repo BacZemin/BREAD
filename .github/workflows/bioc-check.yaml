@@ -1,0 +1,102 @@
+# Authoritative Bioconductor gate: R CMD check + BiocCheck on Bioc devel.
+#
+# This is the real gate for the 0.99.0 submission. The HPC runs an older R
+# than Bioc devel, so BiocCheck there is only a preflight -- this container
+# is what the Bioconductor single-package builder will approximate.
+#
+# The Bioc devel R/Bioc versions are NOT hardcoded anywhere: the "Toolchain"
+# step below prints them, and that printed value is the source of truth.
+on:
+  push:
+    branches: [main, polish-for-release]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+name: bioc-check
+
+permissions:
+  contents: read
+
+jobs:
+  bioc-check:
+    runs-on: ubuntu-latest
+    # Hub downloads for the vignettes can be slow on a cold cache.
+    timeout-minutes: 90
+
+    container:
+      image: bioconductor/bioconductor_docker:devel
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      _R_CHECK_FORCE_SUGGESTS_: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain (source of truth for R / Bioc devel versions)
+        shell: Rscript {0}
+        run: |
+          cat(R.version.string, "\n")
+          cat("Bioconductor:", as.character(BiocManager::version()), "\n")
+          cat("Platform:", R.version$platform, "\n")
+
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/lib/R/host-site-library
+          key: bioc-devel-lib-${{ hashFiles('DESCRIPTION') }}
+          restore-keys: bioc-devel-lib-
+
+      # sesameData / knowYourCG pull reference data through ExperimentHub and
+      # AnnotationHub. Caching this is the difference between a 5-minute and a
+      # 40-minute job, and protects against Hub rate limiting.
+      - name: Cache ExperimentHub / AnnotationHub
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/R
+          key: bioc-hubcache-${{ hashFiles('vignettes/*.Rmd') }}
+          restore-keys: bioc-hubcache-
+
+      - name: Install dependencies
+        shell: Rscript {0}
+        run: |
+          BiocManager::install(c("BiocCheck", "remotes"), ask = FALSE, update = FALSE)
+          remotes::install_deps(dependencies = TRUE, repos = BiocManager::repositories())
+
+      - name: R CMD build
+        run: R CMD build --no-resave-data .
+
+      - name: R CMD check
+        run: R CMD check --no-manual "$(ls -1t *.tar.gz | head -1)"
+
+      - name: BiocCheck
+        shell: Rscript {0}
+        run: |
+          tarball <- dir(".", pattern = "tar\\.gz$", full.names = TRUE)[1]
+          res <- BiocCheck::BiocCheck(tarball, `new-package` = TRUE)
+          n_err  <- length(res$error)
+          n_warn <- length(res$warning)
+          cat(sprintf("\nBiocCheck: %d ERROR / %d WARNING / %d NOTE\n",
+                      n_err, n_warn, length(res$note)))
+          # Two findings cannot be resolved in code:
+          #   ERROR   - maintainer not yet registered on the Bioconductor
+          #             support site (a human account action)
+          #   WARNING - the package name collides case-insensitively with the
+          #             unrelated CRAN package 'bread'; resolving it means
+          #             renaming BREAD, which is a maintainer decision.
+          # Anything beyond those two is a regression and fails the build.
+          if (n_err > 1L || n_warn > 1L) {
+            stop("BiocCheck regression: expected at most 1 ERROR / 1 WARNING, ",
+                 "both known and documented in the PR.")
+          }
+
+      - name: Upload check logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bioc-check-logs
+          path: |
+            **/*.Rcheck/**
+            **/*.BiocCheck/**
+          retention-days: 14

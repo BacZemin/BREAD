@@ -20,3 +20,16 @@ A data frame with one row per region.
 \description{
 Extract the region-level results table from a \link{BreadFit}
 }
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+
+res <- results(fit)
+head(res)
+colnames(res)
+}

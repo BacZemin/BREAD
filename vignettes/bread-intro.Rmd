@@ -21,6 +21,16 @@ knitr::opts_chunk$set(
 set.seed(2026)
 ```
 
+```{r logo, echo=FALSE, results="asis"}
+.logo <- "../man/figures/logo.png"
+if (file.exists(.logo)) {
+  cat(sprintf(
+    '<img src="%s" align="right" width="115" alt="BREAD hex logo" style="margin: 0 0 1em 1em;" />',
+    knitr::image_uri(.logo)
+  ))
+}
+```
+
 ## Why BREAD?
 
 Many methylation studies are not purely discovery-oriented. Instead of
@@ -144,9 +154,9 @@ you want to be stricter or looser.
 
 ```{r results}
 res <- results(fit)
-head(res[order(res$p_gt_delta, decreasing = TRUE),
+head(res[order(res$prob_hyper, decreasing = TRUE),
          c("region_id", "mean_effect", "ci_lo", "ci_hi",
-           "p_gt_delta", "p_lt_neg_delta", "classification")], 5)
+           "prob_hyper", "prob_hypo", "classification")], 5)
 ```
 
 ```{r by-class}
@@ -180,7 +190,7 @@ underlying values. The x-axis preserves the factor order we set on
 
 ```{r one-region, fig.width = 10, fig.height = 4}
 top_hyper <- res[res$classification == "hypermethylated", ]
-top_hyper <- top_hyper[order(top_hyper$p_gt_delta, decreasing = TRUE), ]
+top_hyper <- top_hyper[order(top_hyper$prob_hyper, decreasing = TRUE), ]
 rid <- top_hyper$region_id[1]
 
 p1 <- plot_region_posterior(fit, region_id = rid) +
@@ -248,13 +258,21 @@ $$
 
 The marginal posterior of the contrast coefficient is a location–scale
 Student-t with `df = 2 a_n`. BREAD uses `pt()`/`qt()` to compute
-$P(\beta > \delta)$ and $P(\beta < -\delta)$ analytically — no MCMC.
+$P(\beta > \delta)$, $P(\beta < -\delta)$ and
+$P(|\beta| \le \delta)$ analytically — no MCMC.
 
 The classification rule is then:
 
 - **hypermethylated** if $P(\beta > \delta) \ge$ `prob_cutoff`,
 - **hypomethylated** if $P(\beta < -\delta) \ge$ `prob_cutoff`,
+- **unchanged** if $P(|\beta| \le \delta) \ge$ `rope_cutoff`,
 - **inconclusive** otherwise.
+
+The three probabilities partition the posterior and sum to 1, so two of them
+can clear their thresholds at once only if those thresholds sum to no more
+than 1 — impossible at any sensible setting. The `unchanged` class is what
+separates *"this region demonstrably did not move by more than $\delta$"*
+from *"this region told us nothing"*; both used to be `inconclusive`.
 
 Need partial pooling across regions, non-conjugate priors, or ordered
 contrasts? Set `backend = "brms"`; everything else stays the same.

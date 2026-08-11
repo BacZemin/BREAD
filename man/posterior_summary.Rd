@@ -4,20 +4,33 @@
 \alias{posterior_summary}
 \title{Extract per-region posterior summaries}
 \usage{
-posterior_summary(fit, delta = 0.1, ci = 0.95)
+posterior_summary(fit, delta = 0.1, ci = 0.95, ref_beta = NULL)
 }
 \arguments{
-\item{fit}{Output of \code{\link[=fit_bread_summary]{fit_bread_summary()}} or \code{\link[=fit_bread_brms]{fit_bread_brms()}}.}
+\item{fit}{A \link{BreadFit} (as returned by \code{\link[=fit_bread]{fit_bread()}}), or the internal
+model list from \code{\link[=fit_bread_summary]{fit_bread_summary()}} / \code{\link[=fit_bread_brms]{fit_bread_brms()}}.}
 
 \item{delta}{Effect-size threshold on the M-value scale. Default \code{0.10}.}
 
 \item{ci}{Credible-interval mass. Default \code{0.95}.}
+
+\item{ref_beta}{Reference methylation level for the beta-scale columns.
+\code{NULL} (default) derives it per region from the fitted region matrix.
+Otherwise a single value applied to every region, or a numeric vector
+named by \code{region_id}. Values must lie in (0, 1).}
 }
 \value{
 A \code{data.frame} with one row per region and columns:
 \code{region_id}, \code{n}, \code{mean_effect}, \code{median_effect}, \code{ci_lo}, \code{ci_hi},
-\code{df}, \code{scale}, \code{p_pos}, \code{p_neg}, \code{p_gt_delta}, \code{p_lt_neg_delta}, \code{error}.
-\code{df} is \code{NA_real_} for the empirical path.
+\code{df}, \code{scale}, \code{prob_pos}, \code{prob_neg}, \code{prob_hyper}, \code{prob_hypo},
+\code{prob_rope}, \code{ref_beta}, \code{mean_dbeta}, \code{dbeta_lo}, \code{dbeta_hi},
+\code{delta_beta}, \code{error}.
+\code{n} is the number of \strong{samples} contributing to the region's fit
+after dropping NAs -- not the number of probes, which is carried
+per region in the \code{n_probes} column of the fit's \code{mapping}.
+\code{df} is \code{NA_real_} for the empirical path. The beta-scale columns are
+\code{NA_real_} when no region matrix is available, or when
+\code{summary_fun = "pc1"} (PC1 scores are not M-values).
 }
 \description{
 Given the output of \code{\link[=fit_bread_summary]{fit_bread_summary()}} (conjugate backend) or
@@ -39,3 +52,56 @@ computed from the MCMC draws directly.
 Columns in the returned data frame are the same in both cases.
 }
 
+\section{Equivalence (\code{prob_rope})}{
+
+\code{prob_hyper}, \code{prob_hypo} and \code{prob_rope} are mutually exclusive and
+exhaustive: they are the posterior mass above \code{+delta}, below \code{-delta}, and
+inside the region of practical equivalence \eqn{[-\delta, +\delta]}, and
+they sum to 1. \code{prob_rope} is what lets BREAD state that a region is
+\emph{confidently unchanged} rather than merely undetected — a claim no p-value
+can make. See \code{\link[=classify_regions]{classify_regions()}}.
+}
+
+\section{Beta-scale columns}{
+
+BREAD models M-values, but reports a beta-scale translation of the effect
+and the ROPE half-width via the local linearisation
+\eqn{d\beta \approx dM \cdot \beta(1-\beta)\ln 2}, anchored per region at
+\code{ref_beta}. By default \code{ref_beta} is the region's own mean methylation,
+back-transformed from the mean M-value — well defined for every design and
+contrast type, unlike the reference level of a factor. The same multiplier
+is applied to the effect, both interval bounds and \code{delta}, so the
+beta-scale comparison can never contradict the M-scale classification
+beside it. See \code{\link[=bread_delta_beta]{bread_delta_beta()}}.
+
+Being a first-order expansion, this is exact only in the limit of small
+effects, and it overstates \verb{|mean_dbeta|} for large ones. Measured on
+the packaged vitamin C example (493 regions), the deviation from an
+exact back-transform of the same posterior mean has median 0.0005 and
+99th percentile 0.021 in beta units; relative error is ~2\% for
+\verb{|mean_effect| < 0.25} but ~10\% above 0.5. Regions whose effects are
+that large are unambiguous on the M scale anyway, so the approximation
+does not affect any call -- but do not quote \code{mean_dbeta} to three
+decimal places for a strongly changing region. Back-transform the
+endpoints yourself when the exact beta magnitude is the claim.
+}
+
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+fit <- fit_bread(se_ctrl, reg, ~ passage)
+
+# A BreadFit is accepted directly; the internal model list also works.
+post <- posterior_summary(fit)
+head(post)
+
+# A wider credible interval
+head(posterior_summary(fit, ci = 0.99))
+
+# Posterior mass inside the region of practical equivalence
+summary(posterior_summary(fit)$prob_rope)
+}

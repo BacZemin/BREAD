@@ -3,6 +3,10 @@
 \name{BREAD-utils}
 \alias{BREAD-utils}
 \title{Internal utilities}
+\value{
+Varies by helper: the scale transforms return numeric vectors,
+the detection helpers return a character scalar.
+}
 \description{
 Internal utilities
 }

@@ -9,7 +9,8 @@ bread_colors(which = c("classification", "group", "cross"))
 \arguments{
 \item{which}{One of:
 \itemize{
-\item \code{"classification"} : named 3-vector for hyper/hypo/inconclusive
+\item \code{"classification"} : named 4-vector for
+hyper / hypo / unchanged / inconclusive
 \item \code{"group"}          : unnamed 2-vector for binary contrast plots
 \item \code{"cross"}          : full 9-color palette
 }}
@@ -21,4 +22,9 @@ A character vector of hex colors (named where applicable).
 Colorblind-reasonable palette derived from the MetBrewer \code{Cross} palette
 (Blake Robert Mills). Embedded as hex values so there is no runtime
 dependency on the \code{MetBrewer} package.
+}
+\examples{
+bread_colors("classification")
+bread_colors("group")
+bread_colors("cross")
 }

@@ -11,7 +11,12 @@ map_probes_to_features(se, features, min_probes = 3L)
 non-empty \code{rowRanges()}.}
 
 \item{features}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} of regions. If \code{names(features)}
-is \code{NULL} or empty, IDs \verb{region_1, region_2, ...} are generated.}
+is \code{NULL} or empty, IDs \verb{region_1, region_2, ...} are generated.
+Several ranges may share one name: this is the only way to define a
+region as an exact set of probes, since a single bounding interval would
+sweep in neighbours. Such ranges are collapsed into one region, so
+\code{length(features)} counts \emph{ranges} while the region counts below count
+distinct IDs.}
 
 \item{min_probes}{Integer. Regions with fewer overlapping probes are
 dropped. Default \code{3L}.}
@@ -23,8 +28,8 @@ A \code{data.frame} with (at minimum) columns
 \itemize{
 \item \code{dropped_regions} : character vector of region IDs excluded.
 \item \code{min_probes}      : the threshold applied.
-\item \code{n_features_in}   : regions supplied.
-\item \code{n_features_out}  : regions retained.
+\item \code{n_features_in}   : distinct region IDs supplied (not ranges).
+\item \code{n_features_out}  : distinct region IDs retained.
 }
 }
 \description{
@@ -36,4 +41,19 @@ Probes that overlap multiple regions are emitted once per region (long
 format). Probes with no region are silently excluded from the returned
 mapping. Regions excluded by \code{min_probes} (including those with zero
 overlaps) are recorded on \code{attr(mapping, "dropped_regions")}.
+}
+\examples{
+suppressPackageStartupMessages(library(SummarizedExperiment))
+
+se  <- readRDS(system.file("extdata", "vitc_ag06561.rds", package = "BREAD"))
+reg <- readRDS(system.file("extdata", "vitc_regions.rds", package = "BREAD"))
+se_ctrl <- se[, se$condition == "ctrl"]
+
+mapping <- map_probes_to_features(se, reg)
+head(mapping)
+nrow(mapping)
+
+# Regions carrying fewer than `min_probes` probes are dropped and
+# recorded in an attribute rather than silently disappearing.
+attr(mapping, "dropped_regions")
 }
