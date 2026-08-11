@@ -2,7 +2,7 @@
 <!-- README.md is generated from README.Rmd. Please edit that file, then run
      devtools::build_readme() and commit both files. -->
 
-# BREAD
+# BREAD <a href="https://baczemin.github.io/BREAD/"><img src="man/figures/logo.png" align="right" height="139" alt="BREAD website" /></a>
 
 <!-- badges: start -->
 

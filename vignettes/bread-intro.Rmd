@@ -21,6 +21,16 @@ knitr::opts_chunk$set(
 set.seed(2026)
 ```
 
+```{r logo, echo=FALSE, results="asis"}
+.logo <- "../man/figures/logo.png"
+if (file.exists(.logo)) {
+  cat(sprintf(
+    '<img src="%s" align="right" width="115" alt="BREAD hex logo" style="margin: 0 0 1em 1em;" />',
+    knitr::image_uri(.logo)
+  ))
+}
+```
+
 ## Why BREAD?
 
 Many methylation studies are not purely discovery-oriented. Instead of
